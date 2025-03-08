@@ -23,7 +23,7 @@ import static java.util.Map.entry;
 public class BiomeChoiceScreen extends HandledScreen<BiomeChoiceScreenHandler> {
     private static final Identifier TEXTURE = new Identifier("textures/gui/container/stonecutter.png");
     private static final Item DEFAULT_ICON = Items.GRASS_BLOCK;
-    private static final Map<Identifier, Item> BIOME_ICONS = Map.ofEntries(
+    private static final Map<Identifier, Item> BIOME_ICONS = Map.<Identifier, Item>ofEntries(
             entry(new Identifier("minecraft", "plains"), Items.GRASS_BLOCK),
             entry(new Identifier("minecraft", "snowy_plains"), Items.SNOW_BLOCK),
             entry(new Identifier("minecraft", "sunflower_plains"), Items.SUNFLOWER),
@@ -69,7 +69,7 @@ public class BiomeChoiceScreen extends HandledScreen<BiomeChoiceScreenHandler> {
             entry(new Identifier("minecraft", "stony_peaks"), Items.STONE),
             entry(new Identifier("minecraft", "cherry_grove"), Items.CHERRY_SAPLING),
             entry(new Identifier("minecraft", "ocean"), Items.WATER_BUCKET),
-            entry(new Identifier("minecraft", "deep_ocean"), Items.PRISMARINE),
+            entry(new Identifier("minecraft", "deep_ocean"), Items.PRISMARINE_SHARD),
             entry(new Identifier("minecraft", "warm_ocean"), Items.TROPICAL_FISH_BUCKET),
             entry(new Identifier("minecraft", "lukewarm_ocean"), Items.SEAGRASS),
             entry(new Identifier("minecraft", "deep_lukewarm_ocean"), Items.SEAGRASS),
@@ -131,8 +131,6 @@ public class BiomeChoiceScreen extends HandledScreen<BiomeChoiceScreenHandler> {
 
     private void renderRecipeIcons(DrawContext context, int x, int y, int scrollOffset) {
         if (this.canChoose) {
-            List<Biome> list = this.handler.getAvailableBiomes();
-
             for (int i = this.scrollOffset; i < scrollOffset && i < this.handler.getAvailableBiomesCount(); ++i) {
                 int j = i - this.scrollOffset;
                 int k = x + j % 4 * 16;
