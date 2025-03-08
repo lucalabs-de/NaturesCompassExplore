@@ -3,6 +3,7 @@
   "package": "com.lucalabs.naturescompass.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "RecipeManagerMixin",
     "ServerMixin"
   ],
   "client": [

@@ -5,8 +5,11 @@ import java.util.List;
 
 import com.lucalabs.naturescompass.recipes.CalibrationRecipe;
 import com.lucalabs.naturescompass.recipes.CalibrationRecipeSerializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.recipe.RecipeManager;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,5 +58,4 @@ public class NaturesCompass implements ModInitializer {
         allowedBiomes = new ArrayList<>();
         dimensionIDsForAllowedBiomeIDs = ArrayListMultimap.create();
     }
-
 }
