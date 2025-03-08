@@ -3,14 +3,14 @@
   "id": "naturescompass",
   "version": "${version}",
 
-  "name": "Nature's Compass Immersive",
+  "name": "Nature's Compass",
   "description": "Search for a biome and get information about it.",
   "authors": [
     "lucalabs-de",
     "ChaosTheDude"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/natures-compass",
+    "homepage": "https://modrinth.com/project/natures-compass-explorers-edition",
     "sources": "https://github.com/lucalabs-de/NaturesCompass"
   },
 

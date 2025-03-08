@@ -3,6 +3,8 @@ package com.lucalabs.naturescompass;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lucalabs.naturescompass.recipes.CalibrationRecipe;
+import com.lucalabs.naturescompass.recipes.CalibrationRecipeSerializer;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.screen.ScreenHandlerType;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +34,7 @@ public class NaturesCompass implements ModInitializer {
     public static final ScreenHandlerType<BiomeChoiceScreenHandler> BIOME_SCREEN_HANDLER =
             Registry.register(
                     Registries.SCREEN_HANDLER,
-                    Identifier.of("naturescompass", "biome_choice"),
+                    Identifier.of("naturescompass", "biome_choice_screen"),
                     new ScreenHandlerType<>(BiomeChoiceScreenHandler::new, FeatureSet.empty()));
 
     public static List<Identifier> allowedBiomes;
@@ -43,6 +45,8 @@ public class NaturesCompass implements ModInitializer {
         NaturesCompassConfig.load();
 
         Registry.register(Registries.ITEM, new Identifier(MODID, "naturescompass"), NATURES_COMPASS_ITEM);
+        Registry.register(Registries.RECIPE_SERIALIZER, CalibrationRecipeSerializer.ID, CalibrationRecipeSerializer.INSTANCE);
+        Registry.register(Registries.RECIPE_TYPE, Identifier.of(MODID, CalibrationRecipe.Type.ID), CalibrationRecipe.Type.INSTANCE);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(NATURES_COMPASS_ITEM));
 
