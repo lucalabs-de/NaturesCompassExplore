@@ -10,7 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.UUID;
 
-public class ItemUtils {
+public abstract class ItemUtils {
 	
 	public static boolean verifyNBT(ItemStack stack) {
 		if (stack.isEmpty() || stack.getItem() != NaturesCompass.NATURES_COMPASS_ITEM) {

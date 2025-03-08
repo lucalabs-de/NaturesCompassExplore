@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BiomeUtils {
+public abstract class BiomeUtils {
 
     public static Registry<Biome> getBiomeRegistry(World world) {
         return world.getRegistryManager().get(RegistryKeys.BIOME);
