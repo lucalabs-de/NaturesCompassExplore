@@ -34,23 +34,6 @@ public class BiomeUtils {
         return getBiomeRegistry(world).getOrEmpty(id);
     }
 
-    public static List<Biome> getAllowedBiomes(World world) {
-        Registry<Biome> biomeRegistry = getBiomeRegistry(world);
-        List<Biome> biomes = new ArrayList<>();
-
-        for (RegistryKey<Biome> k : biomeRegistry.getKeys()) {
-            Biome biome = biomeRegistry.get(k);
-            Identifier biomeId = getIdentifierForBiome(world, biome);
-            RegistryEntry<Biome> biomeEntry = biomeRegistry.getEntry(k).orElseThrow();
-
-            if (!biomeIdIsBlacklisted(world, biomeId) && biomeEntry.isIn(BiomeTags.IS_OVERWORLD)) {
-                biomes.add(biome);
-            }
-        }
-
-        return biomes;
-    }
-
     public static int getBiomeSize(World world) {
         // TODO
         return 4;
@@ -90,16 +73,6 @@ public class BiomeUtils {
     @Environment(EnvType.CLIENT)
     public static String getBiomeName(World world, Biome biome) {
         return I18n.translate(Util.createTranslationKey("biome", getIdentifierForBiome(world, biome)));
-    }
-
-    public static boolean biomeIdIsBlacklisted(World world, Identifier biomeID) {
-        final List<String> biomeBlacklist = NaturesCompassConfig.biomeBlacklist;
-        for (String biomeKey : biomeBlacklist) {
-            if (biomeID.toString().matches(convertToRegex(biomeKey))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static String convertToRegex(String glob) {
