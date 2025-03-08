@@ -3,6 +3,7 @@ package com.lucalabs.naturescompass.screens;
 import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.items.NaturesCompassItem;
 import com.lucalabs.naturescompass.network.SearchPacket;
+import com.lucalabs.naturescompass.recipes.CalibrationRecipe;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
@@ -12,7 +13,6 @@ import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.Property;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
@@ -20,22 +20,21 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class BiomeChoiceScreenHandler extends ScreenHandler {
     final Slot inputSlot;
     final Slot outputSlot;
+    final List<Slot> ingredientSlots;
 
-    private final Inventory input;
+    private final SimpleInventory input;
     private final CraftingResultInventory output;
 
     private final World world;
-    private final Property selectedBiome;
-    private final List<Biome> availableBiomes;
     private final ScreenHandlerContext context;
-    Runnable contentsChangedListener;
-    private boolean areBiomesChoosable;
 
     public BiomeChoiceScreenHandler(int syncId, PlayerInventory playerInventory) {
         this(syncId, playerInventory, ScreenHandlerContext.EMPTY);
@@ -45,41 +44,47 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
         super(NaturesCompass.BIOME_SCREEN_HANDLER, syncId);
 
         this.world = playerInventory.player.getWorld();
-        this.contentsChangedListener = () -> {
-        };
         this.context = context;
 
-        this.selectedBiome = Property.create();
-        this.availableBiomes = BiomeUtils.getAllowedBiomes(world);
-        this.areBiomesChoosable = false;
-
         this.output = new CraftingResultInventory();
-        this.input = new SimpleInventory(1) {
+        this.input = new SimpleInventory(4) {
             public void markDirty() {
                 super.markDirty();
                 onContentChanged(this);
-                contentsChangedListener.run();
             }
         };
 
-        this.inputSlot = this.addSlot(new Slot(this.input, 0, 20, 33));
-        this.outputSlot = this.addSlot(new Slot(this.output, 1, 143, 33) {
+        this.inputSlot = this.addSlot(new Slot(this.input, 0, 31, 15) {
+            public boolean canInsert(ItemStack stack) {
+                return stack.isOf(NaturesCompass.NATURES_COMPASS_ITEM);
+            }
+        });
+        this.outputSlot = this.addSlot(new Slot(this.output, 4, 126, 34) {
             public boolean canInsert(ItemStack stack) {
                 return false;
             }
 
             public void onTakeItem(PlayerEntity player, ItemStack stack) {
                 NaturesCompass.LOGGER.error("onTakeItem {}", stack.getItem().toString());
-                if (isInBounds(selectedBiome.get())) {
-                    Biome biome = availableBiomes.get(selectedBiome.get());
 
+                Identifier biomeId = NaturesCompass.NATURES_COMPASS_ITEM.getBiomeId(stack);
+                Optional<Biome> biome = BiomeUtils.getBiomeForIdentifier(world, biomeId);
+
+                biome.ifPresent((Biome b) -> {
                     inputSlot.takeStack(1);
-                    searchForBiome(player, biome, stack);
-                }
+                    ingredientSlots.forEach((Slot s) -> s.takeStack(1));
+                    searchForBiome(player, b, stack);
+                });
 
                 super.onTakeItem(player, stack);
             }
         });
+
+        this.ingredientSlots = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Slot ingredientSlot = this.addSlot(new Slot(this.input, i + 1, 31 + i * 18, 52));
+            this.ingredientSlots.add(ingredientSlot);
+        }
 
         int i;
         for (i = 0; i < 3; ++i) {
@@ -91,24 +96,10 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
         for (i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
-
-        this.addProperty(selectedBiome);
     }
 
     public void onContentChanged(Inventory inventory) {
-        ItemStack itemStack = this.inputSlot.getStack();
-        this.areBiomesChoosable = itemStack.getItem() instanceof NaturesCompassItem;
-        this.selectedBiome.set(-1);
-        this.outputSlot.setStackNoCallbacks(ItemStack.EMPTY);
-    }
-
-    public boolean onButtonClick(PlayerEntity player, int id) {
-        if (this.isInBounds(id)) {
-            this.selectedBiome.set(id);
-            this.populateResult(player);
-        }
-
-        return true;
+        populateResult();
     }
 
     public boolean canInsertIntoSlot(ItemStack stack, Slot slot) {
@@ -123,15 +114,12 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
         return super.canInsertIntoSlot(stack, slot);
     }
 
-    void populateResult(PlayerEntity player) {
-        if (!this.availableBiomes.isEmpty() && this.isInBounds(this.selectedBiome.get())) {
-            Biome biome = this.availableBiomes.get(this.selectedBiome.get());
-            ItemStack newCompass = inputSlot.getStack().copy();
-            NaturesCompass.NATURES_COMPASS_ITEM.setBiomeID(
-                    newCompass,
-                    BiomeUtils.getIdentifierForBiome(world, biome)
-            );
-            this.outputSlot.setStackNoCallbacks(newCompass);
+    void populateResult() {
+        Optional<CalibrationRecipe> match =
+                this.world.getRecipeManager().getFirstMatch(CalibrationRecipe.Type.INSTANCE, this.input, this.world);
+
+        if (match.isPresent()) {
+            this.outputSlot.setStackNoCallbacks(match.get().getOutput(this.world.getRegistryManager()).copy());
         } else {
             this.outputSlot.setStackNoCallbacks(ItemStack.EMPTY);
         }
@@ -146,21 +134,21 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
         if (slot.hasStack()) {
             ItemStack originalStack = slot.getStack();
             newStack = originalStack.copy();
-            if (invSlot == 1) {
-                if (!this.insertItem(originalStack, 2, 38, true)) {
+            if (invSlot == 4) {
+                if (!this.insertItem(originalStack, 5, 41, true)) {
                     return ItemStack.EMPTY;
                 }
 
                 slot.onQuickTransfer(originalStack, newStack);
-            } else if (invSlot == 0) {
-                if (!this.insertItem(originalStack, 2, 38, false)) {
+            } else if (invSlot <= 3) {
+                if (!this.insertItem(originalStack, 5, 41, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (invSlot >= 2 && invSlot < 29) {
-                if (!this.insertItem(originalStack, 29, 38, false)) {
+            } else if (invSlot < 32) {
+                if (!this.insertItem(originalStack, 32, 41, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (invSlot >= 29 && invSlot < 38 && !this.insertItem(originalStack, 2, 29, false)) {
+            } else if (invSlot < 41 && !this.insertItem(originalStack, 5, 32, false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -191,37 +179,6 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
         context.run((world, pos) -> {
             this.dropInventory(player, this.input);
         });
-    }
-
-    public List<Biome> getAvailableBiomes() {
-        return this.availableBiomes;
-    }
-
-    public int getAvailableBiomesCount() {
-        return this.availableBiomes.size();
-    }
-
-    public int getSelectedBiome() {
-        return this.selectedBiome.get();
-    }
-
-    public boolean getAreBiomesChoosable() {
-        return this.areBiomesChoosable;
-    }
-
-    public Identifier getBiomeIdentifierAt(int i) {
-        if (isInBounds(i)) {
-            return BiomeUtils.getIdentifierForBiome(world, this.availableBiomes.get(i));
-        }
-        return null;
-    }
-
-    public void setContentsChangedListener(Runnable contentsChangedListener) {
-        this.contentsChangedListener = contentsChangedListener;
-    }
-
-    private boolean isInBounds(int id) {
-        return id >= 0 && id < this.availableBiomes.size();
     }
 
     private void searchForBiome(PlayerEntity player, Biome biome, ItemStack compass) {

@@ -35,7 +35,7 @@ public class NaturesCompassItem extends Item {
             return;
         }
 
-        Identifier associatedBiomeId = getBiomeID(stack);
+        Identifier associatedBiomeId = getBiomeId(stack);
         Optional<Biome> associatedBiome = BiomeUtils.getBiomeForIdentifier(world, associatedBiomeId);
 
         if (associatedBiome.isPresent()) {
@@ -93,7 +93,7 @@ public class NaturesCompassItem extends Item {
         }
     }
 
-    public void setBiomeID(ItemStack stack, Identifier biomeID) {
+    public void setBiomeId(ItemStack stack, Identifier biomeID) {
         if (ItemUtils.verifyNBT(stack)) {
             stack.getNbt().putString("BiomeID", biomeID.toString());
         }
@@ -123,7 +123,7 @@ public class NaturesCompassItem extends Item {
         return 0;
     }
 
-    public Identifier getBiomeID(ItemStack stack) {
+    public Identifier getBiomeId(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
             return new Identifier(stack.getNbt().getString("BiomeID"));
         }

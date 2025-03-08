@@ -17,6 +17,7 @@ public class BiomeChoiceScreen extends HandledScreen<BiomeChoiceScreenHandler> {
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
+        this.drawMouseoverTooltip(context, mouseX, mouseY);
     }
 
     @Override

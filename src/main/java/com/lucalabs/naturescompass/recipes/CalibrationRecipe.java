@@ -1,7 +1,7 @@
 package com.lucalabs.naturescompass.recipes;
 
 import com.lucalabs.naturescompass.NaturesCompass;
-import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
@@ -11,11 +11,14 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class CalibrationRecipe implements Recipe<CraftingInventory> {
+import static java.util.function.Predicate.not;
+
+public class CalibrationRecipe implements Recipe<SimpleInventory> {
 
     private final List<Ingredient> ingredients;
     private final Identifier biomeId;
@@ -30,19 +33,22 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World world) {
-        if (inventory.getWidth() != 2 && inventory.getHeight() != 2) {
+    public boolean matches(SimpleInventory inventory, World world) {
+        if (inventory.size() != 4) {
             return false;
         }
 
-        List<ItemStack> inputs = inventory.getInputStacks();
+        List<ItemStack> inputs = inventory.stacks.stream()
+                .filter(not(ItemStack::isEmpty))
+                .collect(Collectors.toCollection(ArrayList::new));
 
         for (Ingredient i : ingredients) {
-           Optional<ItemStack> match = inputs.stream().filter(i).findFirst();
-           if (match.isEmpty()) {
-               return false;
-           }
-           inputs.remove(match.get());
+            Optional<ItemStack> match = inputs.stream().filter(i).findFirst();
+            if (match.isEmpty()) {
+                return false;
+            }
+
+            inputs.remove(match.get());
         }
 
         // the ingredients list doesn't contain the actual compass, which we want to be present exactly once
@@ -51,7 +57,9 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
 
     @Override
     public ItemStack getOutput(DynamicRegistryManager registryManager) {
-        return null;
+        ItemStack output = new ItemStack(NaturesCompass.NATURES_COMPASS_ITEM);
+        NaturesCompass.NATURES_COMPASS_ITEM.setBiomeId(output, biomeId);
+        return output;
     }
 
     @Override
@@ -70,7 +78,7 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inventory, DynamicRegistryManager registryManager) {
+    public ItemStack craft(SimpleInventory inventory, DynamicRegistryManager registryManager) {
         return ItemStack.EMPTY;
     }
 
@@ -80,7 +88,7 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
     }
 
     public List<Ingredient> getIngredientList() {
-       return this.ingredients;
+        return this.ingredients;
     }
 
     public Identifier getBiomeId() {
