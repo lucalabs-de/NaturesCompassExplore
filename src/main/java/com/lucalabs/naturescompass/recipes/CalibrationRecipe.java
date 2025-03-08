@@ -56,7 +56,7 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
 
     @Override
     public Identifier getId() {
-        return null;
+        return this.id;
     }
 
     @Override
@@ -89,7 +89,6 @@ public class CalibrationRecipe implements Recipe<CraftingInventory> {
 
     public static class Type implements RecipeType<CalibrationRecipe> {
         public static final Type INSTANCE = new Type();
-        // This will be needed in step 4
         public static final String ID = "biome_choice";
 
         private Type() {
