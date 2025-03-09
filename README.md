@@ -12,7 +12,7 @@ _Note that this deviates from other versions of this mod in that you generally f
 - Support for modded biomes can be added through the config: Simply define what items calibrate the compass to each new biome!
 
 ## Gallery
-
+![Calibrating the compass](https://cdn.modrinth.com/data/cached_images/b318f24665d1bb2f8645702c93fcf6caf4664b10_0.webp)
 _Calibrating the compass using biome-specific items._
 
 ![Compass found in a desert temple](https://cdn.modrinth.com/data/cached_images/d20bbe5fd464e847b8175d07ac59639dd8024096.png)
