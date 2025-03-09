@@ -94,7 +94,8 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                     } else {
                         succeedFirst();
                         foundFirst = true;
-                        return true;
+                        return false; // TODO temporary to make the mod work
+//                        return true;
                     }
                 }
             }

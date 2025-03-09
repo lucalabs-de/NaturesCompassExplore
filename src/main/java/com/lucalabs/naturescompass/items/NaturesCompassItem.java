@@ -84,11 +84,11 @@ public class NaturesCompassItem extends Item {
 
     public void succeedFirst(ItemStack stack, int x, int z, int xO, int zO, int samples) {
         setClosestFound(stack, x, z, xO, zO, samples);
-        worker = null;
     }
 
     public void succeedSecond(ItemStack stack, int x, int z, int xO, int zO, int samples) {
         setSecondClosestFound(stack, x, z, xO, zO, samples);
+        worker = null;
     }
 
     public void fail(ItemStack stack, int searchRadius, int samples) {

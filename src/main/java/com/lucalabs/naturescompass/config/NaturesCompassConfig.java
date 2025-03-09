@@ -162,6 +162,7 @@ public class NaturesCompassConfig {
                 Ingredient.ofItems(Items.SALMON),
                 Ingredient.ofItems(Items.WATER_BUCKET)));
         biomeIngredients.put(Identifier.of("minecraft", "deep_cold_ocean"), List.of(
+                Ingredient.ofItems(Items.SALMON),
                 Ingredient.ofItems(Items.WATER_BUCKET),
                 Ingredient.ofItems(Items.WATER_BUCKET)));
         biomeIngredients.put(Identifier.of("minecraft", "frozen_ocean"), List.of(
@@ -172,11 +173,10 @@ public class NaturesCompassConfig {
                 Ingredient.ofItems(Items.WATER_BUCKET),
                 Ingredient.ofItems(Items.WATER_BUCKET)));
         biomeIngredients.put(Identifier.of("minecraft", "lukewarm_ocean"), List.of(
-                Ingredient.ofItems(Items.KELP),
                 Ingredient.ofItems(Items.PUFFERFISH),
                 Ingredient.ofItems(Items.WATER_BUCKET)));
         biomeIngredients.put(Identifier.of("minecraft", "deep_lukewarm_ocean"), List.of(
-                Ingredient.ofItems(Items.KELP),
+                Ingredient.ofItems(Items.PUFFERFISH),
                 Ingredient.ofItems(Items.WATER_BUCKET),
                 Ingredient.ofItems(Items.WATER_BUCKET)));
         biomeIngredients.put(Identifier.of("minecraft", "warm_ocean"), List.of(
@@ -190,7 +190,10 @@ public class NaturesCompassConfig {
                 Ingredient.ofItems(Items.CLAY_BALL),
                 Ingredient.ofItems(Items.WATER_BUCKET),
                 Ingredient.ofItems(Items.SNOWBALL)));
-        biomeIngredients.put(Identifier.of("minecraft", "plains"), List.of(Ingredient.ofItems(Items.WHEAT), Ingredient.ofItems(Items.HAY_BLOCK), Ingredient.ofItems(Items.POPPY)));
+        biomeIngredients.put(Identifier.of("minecraft", "plains"), List.of(
+                Ingredient.ofItems(Items.WHEAT),
+                Ingredient.ofItems(Items.HAY_BLOCK),
+                Ingredient.ofItems(Items.POPPY)));
         biomeIngredients.put(Identifier.of("minecraft", "sunflower_plains"), List.of(Ingredient.ofItems(Items.SUNFLOWER)));
         biomeIngredients.put(Identifier.of("minecraft", "forest"), List.of(Ingredient.ofItems(Items.OAK_LOG), Ingredient.ofItems(Items.APPLE), Ingredient.ofItems(Items.RED_MUSHROOM)));
         biomeIngredients.put(Identifier.of("minecraft", "flower_forest"), List.of(Ingredient.ofItems(Items.ALLIUM), Ingredient.ofItems(Items.DANDELION)));
