@@ -88,14 +88,14 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                 final Biome biomeAtPos = world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(sampleX, sampleY, sampleZ, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
                 final Identifier biomeAtPosID = BiomeUtils.getIdentifierForBiome(world, biomeAtPos);
                 if (biomeAtPosID != null && biomeAtPosID.equals(biomeId)) {
-                    if (foundFirst) {
-                        succeedSecond();
-                        return false;
-                    } else {
+                    if (!foundFirst) {
                         succeedFirst();
                         foundFirst = true;
                         return false; // TODO temporary to make the mod work
 //                        return true;
+                    } else {
+                        succeedSecond();
+                        return false;
                     }
                 }
             }
@@ -129,6 +129,7 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     private void succeedFirst() {
         NaturesCompass.LOGGER.info("Search succeeded once: {} radius, {} samples", getRadius(), samples);
         NaturesCompass.NATURES_COMPASS_ITEM.succeedFirst(stack, x, z, this.x, this.z, samples);
+        finished = true; // TODO temporary to make the mod work
     }
 
     private void succeedSecond() {
