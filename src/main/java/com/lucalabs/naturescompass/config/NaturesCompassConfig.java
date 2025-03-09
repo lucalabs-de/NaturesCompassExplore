@@ -22,12 +22,18 @@ import java.util.Map;
 public class NaturesCompassConfig {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
     public static int maxSamples = 50000;
     public static int radiusModifier = 2500;
     public static int sampleSpaceModifier = 16;
+
     public static boolean fixBiomeNames = true;
     public static boolean pointToClosest = true;
+    public static float lootChance = 0.05f;
+
+    public static List<Identifier> lootableBiomes = getDefaultBiomes();
     public static Map<Identifier, List<Ingredient>> calibrationRecipes = getDefaultRecipes();
+
     private static Path configFilePath;
 
     public static void load() {
@@ -45,7 +51,9 @@ public class NaturesCompassConfig {
 
                     fixBiomeNames = data.client.fixBiomeNames;
                     pointToClosest = data.common.pointToClosestBiome;
+                    lootChance = data.common.lootChance;
 
+                    lootableBiomes = toBiomeIdList(data.common.lootableBiomes);
                     calibrationRecipes = toIngredientMap(data.common.recipes);
                 } catch (NullPointerException e) {
                     NaturesCompass.LOGGER.error("Failed to parse config, is a field missing? If this error persists, try deleting your config file.");
@@ -68,6 +76,8 @@ public class NaturesCompassConfig {
                             radiusModifier,
                             sampleSpaceModifier,
                             pointToClosest,
+                            lootChance,
+                            fromBiomeIdList(lootableBiomes),
                             fromIngredientMap(calibrationRecipes)
                     ),
                     new Data.Client(fixBiomeNames));
@@ -83,6 +93,24 @@ public class NaturesCompassConfig {
             configFilePath = FabricLoader.getInstance().getConfigDir().resolve(NaturesCompass.MODID + ".json");
         }
         return configFilePath;
+    }
+
+    private static List<String> fromBiomeIdList(List<Identifier> biomes) {
+        return biomes.stream().map(Identifier::toString).toList();
+    }
+
+    private static List<Identifier> toBiomeIdList(List<String> biomes) {
+       return biomes.stream().map(Identifier::new).toList();
+    }
+
+    private static List<Identifier> getDefaultBiomes() {
+        return List.of(
+                new Identifier("minecraft:mushroom_fields"),
+                new Identifier("minecraft:badlands"),
+                new Identifier("minecraft:jungle"),
+                new Identifier("minecraft:frozen_peaks"),
+                new Identifier("minecraft:cherry_grove")
+        );
     }
 
     private static Map<Identifier, List<Ingredient>> toIngredientMap(List<Data.Common.CalibrationRecipe> data) {
@@ -212,8 +240,8 @@ public class NaturesCompassConfig {
 
     private static class Data {
 
-        private final Common common;
         private final Client client;
+        private final Common common;
 
         public Data(Common common, Client client) {
             this.common = common;
@@ -233,6 +261,12 @@ public class NaturesCompassConfig {
             private final String pointToClosestBiomeComment = "Instead of calibrating the compass to a fixed biome, it will always point at the matching biome closest to the players position. Disable to improve performance.";
             private final boolean pointToClosestBiome;
 
+            private final String lootChanceComment = "Probability of finding a pre-calibrated compass in a dungeon chest. The value should be between 0 and 1. 1 is always, 0 is never.";
+            private final float lootChance;
+
+            private final String lootableBiomesComment = "List of biomes for which pre-calibrated compasses can be found.";
+            private final List<String> lootableBiomes;
+
             private final List<CalibrationRecipe> recipes;
 
             private Common(
@@ -240,11 +274,15 @@ public class NaturesCompassConfig {
                     int radiusModifier,
                     int sampleSpaceModifier,
                     boolean pointToClosest,
+                    float lootChance,
+                    List<String> lootableBiomes,
                     List<CalibrationRecipe> recipes) {
                 this.maxSamples = maxSamples;
                 this.radiusModifier = radiusModifier;
                 this.sampleSpaceModifier = sampleSpaceModifier;
                 this.pointToClosestBiome = pointToClosest;
+                this.lootChance = lootChance;
+                this.lootableBiomes = lootableBiomes;
                 this.recipes = recipes;
             }
 

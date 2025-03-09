@@ -78,7 +78,7 @@ public class NaturesCompassItem extends Item {
 
     public void setFound(ItemStack stack, int x, int z, int samples, PlayerEntity player) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt("State", CompassState.FOUND.getID());
+            stack.getNbt().putInt("State", CompassState.FOUND.getId());
             stack.getNbt().putInt("FoundX", x);
             stack.getNbt().putInt("FoundZ", z);
             stack.getNbt().putInt("Samples", samples);
@@ -87,7 +87,7 @@ public class NaturesCompassItem extends Item {
 
     public void setNotFound(ItemStack stack, int searchRadius, int samples) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt("State", CompassState.NOT_FOUND.getID());
+            stack.getNbt().putInt("State", CompassState.NOT_FOUND.getId());
             stack.getNbt().putInt("SearchRadius", searchRadius);
             stack.getNbt().putInt("Samples", samples);
         }
@@ -101,7 +101,7 @@ public class NaturesCompassItem extends Item {
 
     public CompassState getState(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
-            return CompassState.fromID(stack.getNbt().getInt("State"));
+            return CompassState.fromId(stack.getNbt().getInt("State"));
         }
 
         return null;

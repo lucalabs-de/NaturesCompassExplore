@@ -52,7 +52,6 @@ public class SyncPacket extends PacketByteBuf {
 		
 		client.execute(() -> {
 	        NaturesCompass.allowedBiomes = allowedBiomeIDs;
-	        NaturesCompass.dimensionIDsForAllowedBiomeIDs = dimensionIDsForAllowedBiomeIDs;
 		});
 	}
 

@@ -10,13 +10,13 @@ public enum CompassState {
 		this.id = id;
 	}
 
-	public int getID() {
+	public int getId() {
 		return id;
 	}
 
-	public static CompassState fromID(int id) {
+	public static CompassState fromId(int id) {
 		for (CompassState state : values()) {
-			if (state.getID() == id) {
+			if (state.getId() == id) {
 				return state;
 			}
 		}
