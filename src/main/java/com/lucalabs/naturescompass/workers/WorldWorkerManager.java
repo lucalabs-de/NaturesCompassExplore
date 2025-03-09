@@ -5,7 +5,7 @@ import java.util.List;
 
 public class WorldWorkerManager {
 
-	private static List<IWorker> workers = new ArrayList<IWorker>();
+	private static final List<IWorker> workers = new ArrayList<>();
 	private static long startTime = -1;
 	private static int index = 0;
 
@@ -54,7 +54,7 @@ public class WorldWorkerManager {
 		workers.clear();
 	}
 
-	public static interface IWorker {
+	public interface IWorker {
 		boolean hasWork();
 
 		boolean doWork();

@@ -5,10 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -16,8 +13,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public abstract class BiomeUtils {
@@ -45,6 +40,7 @@ public abstract class BiomeUtils {
 
     @Environment(EnvType.CLIENT)
     public static String getBiomeNameForDisplay(World world, Biome biome) {
+
         if (biome != null) {
             if (NaturesCompassConfig.fixBiomeNames) {
                 final String original = getBiomeName(world, biome);
@@ -55,7 +51,7 @@ public abstract class BiomeUtils {
                     if (Character.isUpperCase(c) && Character.isLowerCase(pre) && Character.isAlphabetic(pre)) {
                         fixed.append(" ");
                     }
-                    fixed.append(String.valueOf(c));
+                    fixed.append(c);
                     pre = c;
                 }
 

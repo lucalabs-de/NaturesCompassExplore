@@ -3,7 +3,6 @@ package com.lucalabs.naturescompass.workers;
 import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.config.NaturesCompassConfig;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -22,7 +21,6 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     private final Identifier biomeId;
     private final ItemStack stack;
     private final BlockPos startPos;
-    private final PlayerEntity player;
     private Direction direction;
     private int samples;
     private int nextLength;
@@ -31,12 +29,12 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     private int z;
     private int[] yValues;
     private int length;
+    private boolean foundFirst;
     private boolean finished;
     private int lastRadiusThreshold;
 
-    public BiomeSearchWorker(ServerWorld world, PlayerEntity player, ItemStack stack, Biome biome, BlockPos startPos) {
+    public BiomeSearchWorker(ServerWorld world, ItemStack stack, Biome biome, BlockPos startPos) {
         this.world = world;
-        this.player = player;
         this.stack = stack;
         this.startPos = startPos;
         x = startPos.getX();
@@ -50,6 +48,7 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
         samples = 0;
         direction = Direction.UP;
         finished = false;
+        foundFirst = false;
         biomeId = BiomeUtils.getIdentifierForBiome(world, biome);
         lastRadiusThreshold = 0;
     }
@@ -89,8 +88,14 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                 final Biome biomeAtPos = world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(sampleX, sampleY, sampleZ, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
                 final Identifier biomeAtPosID = BiomeUtils.getIdentifierForBiome(world, biomeAtPos);
                 if (biomeAtPosID != null && biomeAtPosID.equals(biomeId)) {
-                    succeed();
-                    return false;
+                    if (foundFirst) {
+                        succeedSecond();
+                        return false;
+                    } else {
+                        succeedFirst();
+                        foundFirst = true;
+                        return true;
+                    }
                 }
             }
 
@@ -110,18 +115,24 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                 lastRadiusThreshold = radius / 500;
             }
         }
+
         if (hasWork()) {
             return true;
-        }
-        if (!finished) {
+        } else if (!finished) {
             fail();
         }
+
         return false;
     }
 
-    private void succeed() {
-        NaturesCompass.LOGGER.info("Search succeeded: {} radius, {} samples", getRadius(), samples);
-        NaturesCompass.NATURES_COMPASS_ITEM.succeed(stack, player, x, z, samples);
+    private void succeedFirst() {
+        NaturesCompass.LOGGER.info("Search succeeded once: {} radius, {} samples", getRadius(), samples);
+        NaturesCompass.NATURES_COMPASS_ITEM.succeedFirst(stack, x, z, this.x, this.z, samples);
+    }
+
+    private void succeedSecond() {
+        NaturesCompass.LOGGER.info("Search succeeded twice: {} radius, {} samples", getRadius(), samples);
+        NaturesCompass.NATURES_COMPASS_ITEM.succeedSecond(stack, x, z, this.x, this.z, samples);
         finished = true;
     }
 

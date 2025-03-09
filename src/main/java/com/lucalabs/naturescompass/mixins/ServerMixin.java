@@ -11,6 +11,8 @@ import com.lucalabs.naturescompass.workers.WorldWorkerManager;
 
 import net.minecraft.server.MinecraftServer;
 
+// In theory this could be achieved with Fabric events, but I worry that the original author knows something I don't, so
+// I won't touch this.
 @Mixin(MinecraftServer.class)
 public class ServerMixin {
 

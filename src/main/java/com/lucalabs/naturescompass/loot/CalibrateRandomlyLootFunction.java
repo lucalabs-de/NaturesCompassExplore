@@ -1,17 +1,18 @@
 package com.lucalabs.naturescompass.loot;
 
-import com.google.common.collect.Lists;
 import com.google.gson.*;
 import com.lucalabs.naturescompass.NaturesCompass;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.function.ConditionalLootFunction;
-import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.loot.provider.nbt.LootNbtProvider;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,10 @@ public class CalibrateRandomlyLootFunction extends ConditionalLootFunction {
         this.availableBiomes = availableBiomes;
     }
 
+    public static CalibrateRandomlyLootFunction.Builder builder(List<Identifier> biomes) {
+        return new Builder(biomes);
+    }
+
     @Override
     protected ItemStack process(ItemStack stack, LootContext context) {
         Random random = new Random();
@@ -38,18 +43,12 @@ public class CalibrateRandomlyLootFunction extends ConditionalLootFunction {
         Identifier chosenBiome = availableBiomes.get(random.nextInt(availableBiomes.size()));
         NaturesCompass.NATURES_COMPASS_ITEM.setBiomeId(stack, chosenBiome);
 
-        // TODO potentially search for biome here already?
-
         return stack;
     }
 
     @Override
     public LootFunctionType getType() {
         return NaturesCompass.CALIBRATE_RANDOMLY_LOOT_FUNCTION;
-    }
-
-    public static CalibrateRandomlyLootFunction.Builder builder(List<Identifier> biomes) {
-        return new Builder(biomes);
     }
 
     public static class Serializer extends ConditionalLootFunction.Serializer<CalibrateRandomlyLootFunction> {

@@ -1,12 +1,13 @@
 package com.lucalabs.naturescompass.items;
 
+import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
 import com.lucalabs.naturescompass.utils.CompassState;
 import com.lucalabs.naturescompass.utils.ItemUtils;
 import com.lucalabs.naturescompass.workers.BiomeSearchWorker;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -14,6 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
@@ -44,90 +46,228 @@ public class NaturesCompassItem extends Item {
         }
     }
 
-    public void searchForBiome(ServerWorld world, PlayerEntity player, ItemStack stack, Identifier biomeId, BlockPos pos) {
+    @Override
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        if (!world.isClient()) {
+            ServerWorld serverWorld = (ServerWorld) world;
+            BlockPos curPos = entity.getBlockPos();
+            // TODO what to do with SECOND_CLOSEST_NOT_FOUND case?
+            switch (getState(stack)) {
+                case INACTIVE:
+                    if (hasBiomeId(stack)) {
+                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+                    }
+                    break;
+                case FOUND_SECOND_CLOSEST:
+                    NaturesCompass.LOGGER.info("found second closest");
+                    if (!isClosestStillValid(stack, curPos)) {
+                        NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
+                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+                    }
+            }
+        }
+    }
+
+    public void searchForBiome(ServerWorld world, ItemStack stack, Identifier biomeId, BlockPos pos) {
         Optional<Biome> optionalBiome = BiomeUtils.getBiomeForIdentifier(world, biomeId);
         if (optionalBiome.isPresent()) {
+            setState(stack, CompassState.SEARCHING);
+
             if (worker != null) {
                 worker.stop();
             }
-            worker = new BiomeSearchWorker(world, player, stack, optionalBiome.get(), pos);
+
+            worker = new BiomeSearchWorker(world, stack, optionalBiome.get(), pos);
             worker.start();
         }
     }
 
-    public void succeed(ItemStack stack, PlayerEntity player, int x, int z, int samples) {
-        setFound(stack, x, z, samples, player);
+    public void succeedFirst(ItemStack stack, int x, int z, int xO, int zO, int samples) {
+        setClosestFound(stack, x, z, xO, zO, samples);
         worker = null;
     }
 
+    public void succeedSecond(ItemStack stack, int x, int z, int xO, int zO, int samples) {
+        setSecondClosestFound(stack, x, z, xO, zO, samples);
+    }
+
     public void fail(ItemStack stack, int searchRadius, int samples) {
-        setNotFound(stack, searchRadius, samples);
+        if (getState(stack) == CompassState.FOUND_CLOSEST) {
+            setSecondClosestNotFound(stack, searchRadius, samples);
+        } else {
+            setClosestNotFound(stack, searchRadius, samples);
+        }
+
         worker = null;
     }
 
     public UUID getUuid(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
-            if (!stack.getNbt().contains("ID")) {
-                stack.getNbt().putUuid("ID", UUID.randomUUID());
+            if (!stack.getNbt().contains(NbtProperties.ID)) {
+                stack.getNbt().putUuid(NbtProperties.ID, UUID.randomUUID());
             }
 
-            return stack.getNbt().getUuid("ID");
+            return stack.getNbt().getUuid(NbtProperties.ID);
         }
         return null;
     }
 
-    public void setFound(ItemStack stack, int x, int z, int samples, PlayerEntity player) {
+    public void setClosestFound(ItemStack stack, int x, int z, int xO, int zO, int samples) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt("State", CompassState.FOUND.getId());
-            stack.getNbt().putInt("FoundX", x);
-            stack.getNbt().putInt("FoundZ", z);
-            stack.getNbt().putInt("Samples", samples);
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_CLOSEST.getId());
+            stack.getNbt().putInt(NbtProperties.ORIGIN_X, xO);
+            stack.getNbt().putInt(NbtProperties.ORIGIN_Z, zO);
+            stack.getNbt().putInt(NbtProperties.CLOSEST_X, x);
+            stack.getNbt().putInt(NbtProperties.CLOSEST_Z, z);
+            stack.getNbt().putInt(NbtProperties.SAMPLES, samples);
         }
     }
 
-    public void setNotFound(ItemStack stack, int searchRadius, int samples) {
+    public void setClosestNotFound(ItemStack stack, int searchRadius, int samples) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt("State", CompassState.NOT_FOUND.getId());
-            stack.getNbt().putInt("SearchRadius", searchRadius);
-            stack.getNbt().putInt("Samples", samples);
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.CLOSEST_NOT_FOUND.getId());
+            stack.getNbt().putInt(NbtProperties.SEARCH_RADIUS, searchRadius);
+            stack.getNbt().putInt(NbtProperties.SAMPLES, samples);
+        }
+    }
+
+    public void setSecondClosestFound(ItemStack stack, int x, int z, int xO, int zO, int samples) {
+        if (ItemUtils.verifyNBT(stack)) {
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_SECOND_CLOSEST.getId());
+
+            // ensure this is actually farther away than the closest biome (our sampling might have gotten unlucky)
+            int closestX = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
+            int closestZ = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
+
+            double distToClosest = Math.sqrt(closestX * closestX + closestZ * closestZ);
+            double distToSecondClosest = Math.sqrt(x * x + z * z);
+
+            if (distToClosest > distToSecondClosest) {
+                // oh-oh, let's swap
+                stack.getNbt().putDouble(NbtProperties.DISTANCE_TO_SECOND_CLOSEST, distToClosest);
+                stack.getNbt().putInt(NbtProperties.CLOSEST_X, x);
+                stack.getNbt().putInt(NbtProperties.CLOSEST_Z, z);
+            } else {
+                stack.getNbt().putDouble(NbtProperties.DISTANCE_TO_SECOND_CLOSEST, distToSecondClosest);
+                stack.getNbt().putInt(NbtProperties.SAMPLES, samples);
+            }
+        }
+    }
+
+    public void setSecondClosestNotFound(ItemStack stack, int searchRadius, int samples) {
+        if (ItemUtils.verifyNBT(stack)) {
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.SECOND_CLOSEST_NOT_FOUND.getId());
+            stack.getNbt().putInt(NbtProperties.SEARCH_RADIUS, searchRadius);
+            stack.getNbt().putInt(NbtProperties.SAMPLES, samples);
         }
     }
 
     public void setBiomeId(ItemStack stack, Identifier biomeID) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putString("BiomeID", biomeID.toString());
+            stack.getNbt().putString(NbtProperties.BIOME, biomeID.toString());
+        }
+    }
+
+    public Identifier getBiomeId(ItemStack stack) {
+        if (ItemUtils.verifyNBT(stack)) {
+            return new Identifier(stack.getNbt().getString(NbtProperties.BIOME));
+        }
+
+        return new Identifier("");
+    }
+
+    public boolean hasBiomeId(ItemStack stack) {
+        if (ItemUtils.verifyNBT(stack)) {
+            return stack.getNbt().contains(NbtProperties.BIOME);
+        }
+
+        return false;
+    }
+
+    public void setState(ItemStack stack, CompassState state) {
+        if (ItemUtils.verifyNBT(stack)) {
+            stack.getNbt().putInt(NbtProperties.STATE, state.getId());
         }
     }
 
     public CompassState getState(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
-            return CompassState.fromId(stack.getNbt().getInt("State"));
+            return CompassState.fromId(stack.getNbt().getInt(NbtProperties.STATE));
         }
 
         return null;
     }
 
-    public int getFoundBiomeX(ItemStack stack) {
-        if (ItemUtils.verifyNBT(stack)) {
-            return stack.getNbt().getInt("FoundX");
-        }
-
-        return 0;
+    public BlockPos getFoundBiomePos(ItemStack stack) {
+        return getClosestBiomePos(stack);
     }
 
-    public int getFoundBiomeZ(ItemStack stack) {
+    private BlockPos getClosestBiomePos(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
-            return stack.getNbt().getInt("FoundZ");
+            int x = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
+            int z = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
+
+            return new BlockPos(x, 0, z);
         }
 
-        return 0;
+        return BlockPos.ORIGIN;
     }
 
-    public Identifier getBiomeId(ItemStack stack) {
+    private BlockPos getOriginPos(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
-            return new Identifier(stack.getNbt().getString("BiomeID"));
+            int x = stack.getNbt().getInt(NbtProperties.ORIGIN_X);
+            int z = stack.getNbt().getInt(NbtProperties.ORIGIN_Z);
+
+            return new BlockPos(x, 0, z);
         }
 
-        return new Identifier("");
+        return BlockPos.ORIGIN;
+    }
+
+    private double getDistanceToSecondClosest(ItemStack stack) {
+        if (ItemUtils.verifyNBT(stack)) {
+            return stack.getNbt().getDouble(NbtProperties.DISTANCE_TO_SECOND_CLOSEST);
+        }
+
+        return 0.0;
+    }
+
+    private boolean isClosestStillValid(ItemStack stack, BlockPos playerPos) {
+        if (!ItemUtils.verifyNBT(stack)) {
+            return false;
+        }
+
+        // if someone reads this and knows how to do this without the square root, lmk
+        if (getState(stack) == CompassState.FOUND_SECOND_CLOSEST) {
+            Vec3d origin = getOriginPos(stack).toCenterPos();
+            Vec3d closest = getFoundBiomePos(stack).toCenterPos();
+            Vec3d current = playerPos.toCenterPos();
+
+            Vec3d originToCur = current.subtract(origin);
+            Vec3d curToClosest = closest.subtract(current);
+
+            double originDistToSecondClosest = getDistanceToSecondClosest(stack);
+            double originDistToCur = originToCur.horizontalLength();
+            double maxSafeDist = originDistToSecondClosest - originDistToCur;
+
+            double curSqDistToClosest = curToClosest.horizontalLengthSquared();
+
+            return curSqDistToClosest < maxSafeDist * maxSafeDist;
+        }
+
+        return true;
+    }
+
+    private static class NbtProperties {
+        private static final String ID = "ID";
+        private static final String STATE = "State";
+        private static final String ORIGIN_X = "OriginX";
+        private static final String ORIGIN_Z = "OriginZ";
+        private static final String CLOSEST_X = "FoundX";
+        private static final String CLOSEST_Z = "FoundZ";
+        private static final String DISTANCE_TO_SECOND_CLOSEST = "FoundDist2";
+        private static final String SAMPLES = "Samples";
+        private static final String SEARCH_RADIUS = "SearchRadius";
+        private static final String BIOME = "BiomeID";
     }
 }

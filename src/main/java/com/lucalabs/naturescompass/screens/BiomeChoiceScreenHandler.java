@@ -65,8 +65,6 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
             }
 
             public void onTakeItem(PlayerEntity player, ItemStack stack) {
-                NaturesCompass.LOGGER.error("onTakeItem {}", stack.getItem().toString());
-
                 Identifier biomeId = NaturesCompass.NATURES_COMPASS_ITEM.getBiomeId(stack);
                 Optional<Biome> biome = BiomeUtils.getBiomeForIdentifier(world, biomeId);
 

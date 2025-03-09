@@ -38,7 +38,7 @@ public class NaturesCompassClient implements ClientModInitializer {
 					return 0.0F;
 				} else {
 					final boolean entityExists = entityLiving != null;
-					final Entity entity = (Entity) (entityExists ? entityLiving : stack.getFrame());
+					final Entity entity = entityExists ? entityLiving : stack.getFrame();
 					if (world == null && entity.getWorld() instanceof ClientWorld) {
 						world = (ClientWorld) entity.getWorld();
 					}
@@ -78,8 +78,9 @@ public class NaturesCompassClient implements ClientModInitializer {
 				if (stack.getItem() == NaturesCompass.NATURES_COMPASS_ITEM) {
 					NaturesCompassItem compassItem = (NaturesCompassItem) stack.getItem();
 					BlockPos pos;
-					if (compassItem.getState(stack) == CompassState.FOUND) {
-						pos = new BlockPos(compassItem.getFoundBiomeX(stack), 0, compassItem.getFoundBiomeZ(stack));
+					CompassState curState = compassItem.getState(stack);
+					if (curState == CompassState.FOUND_CLOSEST || curState == CompassState.FOUND_SECOND_CLOSEST) {
+						pos = compassItem.getFoundBiomePos(stack);
 					} else {
 						pos = world.getSpawnPos();
 					}
