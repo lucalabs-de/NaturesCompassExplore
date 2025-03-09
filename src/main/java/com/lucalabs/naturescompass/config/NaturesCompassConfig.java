@@ -109,6 +109,7 @@ public class NaturesCompassConfig {
                 new Identifier("minecraft:badlands"),
                 new Identifier("minecraft:jungle"),
                 new Identifier("minecraft:frozen_peaks"),
+                new Identifier("minecraft:ice_spikes"),
                 new Identifier("minecraft:cherry_grove")
         );
     }
@@ -191,33 +192,89 @@ public class NaturesCompassConfig {
                 Ingredient.ofItems(Items.WATER_BUCKET),
                 Ingredient.ofItems(Items.SNOWBALL)));
         biomeIngredients.put(Identifier.of("minecraft", "plains"), List.of(
-                Ingredient.ofItems(Items.WHEAT),
-                Ingredient.ofItems(Items.HAY_BLOCK),
-                Ingredient.ofItems(Items.POPPY)));
-        biomeIngredients.put(Identifier.of("minecraft", "sunflower_plains"), List.of(Ingredient.ofItems(Items.SUNFLOWER)));
-        biomeIngredients.put(Identifier.of("minecraft", "forest"), List.of(Ingredient.ofItems(Items.OAK_LOG), Ingredient.ofItems(Items.APPLE), Ingredient.ofItems(Items.RED_MUSHROOM)));
-        biomeIngredients.put(Identifier.of("minecraft", "flower_forest"), List.of(Ingredient.ofItems(Items.ALLIUM), Ingredient.ofItems(Items.DANDELION)));
-        biomeIngredients.put(Identifier.of("minecraft", "birch_forest"), List.of(Ingredient.ofItems(Items.BIRCH_LOG), Ingredient.ofItems(Items.BIRCH_SAPLING), Ingredient.ofItems(Items.ROSE_BUSH)));
-        biomeIngredients.put(Identifier.of("minecraft", "dark_forest"), List.of(Ingredient.ofItems(Items.DARK_OAK_LOG), Ingredient.ofItems(Items.BROWN_MUSHROOM), Ingredient.ofItems(Items.APPLE)));
-        biomeIngredients.put(Identifier.of("minecraft", "old_growth_birch_forest"), List.of(Ingredient.ofItems(Items.BIRCH_LOG), Ingredient.ofItems(Items.LARGE_FERN), Ingredient.ofItems(Items.OXEYE_DAISY)));
-        biomeIngredients.put(Identifier.of("minecraft", "jungle"), List.of(Ingredient.ofItems(Items.COCOA_BEANS), Ingredient.ofItems(Items.MELON_SLICE), Ingredient.ofItems(Items.JUNGLE_LOG)));
-        biomeIngredients.put(Identifier.of("minecraft", "sparse_jungle"), List.of(Ingredient.ofItems(Items.VINE), Ingredient.ofItems(Items.MELON_SLICE), Ingredient.ofItems(Items.COCOA_BEANS)));
-        biomeIngredients.put(Identifier.of("minecraft", "bamboo_jungle"), List.of(Ingredient.ofItems(Items.BAMBOO), Ingredient.ofItems(Items.PANDA_SPAWN_EGG), Ingredient.ofItems(Items.PODZOL)));
-        biomeIngredients.put(Identifier.of("minecraft", "taiga"), List.of(Ingredient.ofItems(Items.SPRUCE_LOG), Ingredient.ofItems(Items.SWEET_BERRIES), Ingredient.ofItems(Items.FERN)));
-        biomeIngredients.put(Identifier.of("minecraft", "snowy_taiga"), List.of(Ingredient.ofItems(Items.SPRUCE_LOG), Ingredient.ofItems(Items.SNOWBALL), Ingredient.ofItems(Items.SWEET_BERRIES)));
+                Ingredient.ofItems(Items.DIRT)));
+        biomeIngredients.put(Identifier.of("minecraft", "sunflower_plains"), List.of(
+                Ingredient.ofItems(Items.DIRT),
+                Ingredient.ofItems(Items.SUNFLOWER)));
+        biomeIngredients.put(Identifier.of("minecraft", "forest"), List.of(
+                Ingredient.ofItems(Items.OAK_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "flower_forest"), List.of(
+                Ingredient.ofItems(Items.OAK_SAPLING),
+                Ingredient.ofItems(Items.DANDELION)));
+        biomeIngredients.put(Identifier.of("minecraft", "birch_forest"), List.of(
+                Ingredient.ofItems(Items.BIRCH_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "dark_forest"), List.of(
+                Ingredient.ofItems(Items.DARK_OAK_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "old_growth_birch_forest"), List.of(
+                Ingredient.ofItems(Items.BIRCH_SAPLING),
+                Ingredient.ofItems(Items.BIRCH_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "old_growth_spruce_taiga"), List.of(
+                Ingredient.ofItems(Items.SPRUCE_SAPLING),
+                Ingredient.ofItems(Items.SPRUCE_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "old_growth_pine_taiga"), List.of(
+                Ingredient.ofItems(Items.SPRUCE_SAPLING),
+                Ingredient.ofItems(Items.SPRUCE_SAPLING),
+                Ingredient.ofItems(Items.SPRUCE_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "mushroom_fields"), List.of(
+                Ingredient.ofItems(Items.MUSHROOM_STEW),
+                Ingredient.ofItems(Items.BROWN_MUSHROOM),
+                Ingredient.ofItems(Items.RED_MUSHROOM)));
+        biomeIngredients.put(Identifier.of("minecraft", "jungle"), List.of(
+                Ingredient.ofItems(Items.JUNGLE_SAPLING),
+                Ingredient.ofItems(Items.JUNGLE_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "sparse_jungle"), List.of(
+                Ingredient.ofItems(Items.JUNGLE_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "bamboo_jungle"), List.of(
+                Ingredient.ofItems(Items.BAMBOO)));
+        biomeIngredients.put(Identifier.of("minecraft", "taiga"), List.of(
+                Ingredient.ofItems(Items.SPRUCE_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "snowy_taiga"), List.of(
+                Ingredient.ofItems(Items.SPRUCE_SAPLING),
+                Ingredient.ofItems(Items.SNOWBALL)));
+        biomeIngredients.put(Identifier.of("minecraft", "snowy_slopes"), List.of(
+                Ingredient.ofItems(Items.SPRUCE_SAPLING),
+                Ingredient.ofItems(Items.POWDER_SNOW_BUCKET)));
+        biomeIngredients.put(Identifier.of("minecraft", "frozen_peaks"), List.of(
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.POWDER_SNOW_BUCKET)));
+        biomeIngredients.put(Identifier.of("minecraft", "jagged_peaks"), List.of(
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.STONE)));
+        biomeIngredients.put(Identifier.of("minecraft", "stony_peaks"), List.of(
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.CALCITE)));
         biomeIngredients.put(Identifier.of("minecraft", "savanna"), List.of(
                 Ingredient.ofItems(Items.ACACIA_SAPLING)));
-        biomeIngredients.put(Identifier.of("minecraft", "desert"), List.of(Ingredient.ofItems(Items.SAND), Ingredient.ofItems(Items.CACTUS), Ingredient.ofItems(Items.DEAD_BUSH)));
-        biomeIngredients.put(Identifier.of("minecraft", "swamp"), List.of(Ingredient.ofItems(Items.MUD), Ingredient.ofItems(Items.LILY_PAD), Ingredient.ofItems(Items.SLIME_BALL)));
-        biomeIngredients.put(Identifier.of("minecraft", "mangrove_swamp"), List.of(Ingredient.ofItems(Items.MANGROVE_LOG), Ingredient.ofItems(Items.MANGROVE_PROPAGULE), Ingredient.ofItems(Items.MUD)));
-        biomeIngredients.put(Identifier.of("minecraft", "badlands"), List.of(Ingredient.ofItems(Items.RED_SAND), Ingredient.ofItems(Items.TERRACOTTA), Ingredient.ofItems(Items.GOLD_NUGGET)));
-        biomeIngredients.put(Identifier.of("minecraft", "meadow"), List.of(Ingredient.ofItems(Items.CORNFLOWER), Ingredient.ofItems(Items.DANDELION), Ingredient.ofItems(Items.OXEYE_DAISY)));
+        biomeIngredients.put(Identifier.of("minecraft", "savanna_plateau"), List.of(
+                Ingredient.ofItems(Items.STONE),
+                Ingredient.ofItems(Items.ACACIA_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "desert"), List.of(
+                Ingredient.ofItems(Items.SAND),
+                Ingredient.ofItems(Items.CACTUS)));
+        biomeIngredients.put(Identifier.of("minecraft", "swamp"), List.of(
+                Ingredient.ofItems(Items.LILY_PAD)));
+        biomeIngredients.put(Identifier.of("minecraft", "mangrove_swamp"), List.of(
+                Ingredient.ofItems(Items.MANGROVE_PROPAGULE)));
+        biomeIngredients.put(Identifier.of("minecraft", "badlands"), List.of(
+                Ingredient.ofItems(Items.RED_SAND)));
+        biomeIngredients.put(Identifier.of("minecraft", "eroded_badlands"), List.of(
+                Ingredient.ofItems(Items.RED_SAND),
+                Ingredient.ofItems(Items.GUNPOWDER)));
+        biomeIngredients.put(Identifier.of("minecraft", "wooded_badlands"), List.of(
+                Ingredient.ofItems(Items.RED_SAND),
+                Ingredient.ofItems(Items.OAK_SAPLING)));
+        biomeIngredients.put(Identifier.of("minecraft", "meadow"), List.of(
+                Ingredient.ofItems(Items.DIRT),
+                Ingredient.ofItems(Items.DANDELION)));
         biomeIngredients.put(Identifier.of("minecraft", "cherry_grove"), List.of(
                 Ingredient.ofItems(Items.CHERRY_SAPLING)));
         biomeIngredients.put(Identifier.of("minecraft", "snowy_plains"), List.of(
                 Ingredient.ofItems(Items.SNOWBALL),
                 Ingredient.ofItems(Items.DIRT)));
-        biomeIngredients.put(Identifier.of("minecraft", "ice_spikes"), List.of(Ingredient.ofItems(Items.PACKED_ICE), Ingredient.ofItems(Items.BLUE_ICE), Ingredient.ofItems(Items.SNOWBALL)));
+        biomeIngredients.put(Identifier.of("minecraft", "ice_spikes"), List.of(Ingredient.ofItems(Items.PACKED_ICE), Ingredient.ofItems(Items.SNOWBALL)));
         biomeIngredients.put(Identifier.of("minecraft", "dripstone_caves"), List.of(
                 Ingredient.ofItems(Items.POINTED_DRIPSTONE),
                 Ingredient.ofItems(Items.DRIPSTONE_BLOCK)));
@@ -225,6 +282,8 @@ public class NaturesCompassConfig {
                 Ingredient.ofItems(Items.MOSS_BLOCK),
                 Ingredient.ofItems(Items.GLOW_BERRIES),
                 Ingredient.ofItems(Items.AZALEA)));
+        biomeIngredients.put(Identifier.of("minecraft", "deep_dark"), List.of(
+                Ingredient.ofItems(Items.SCULK)));
         biomeIngredients.put(Identifier.of("minecraft", "windswept_forest"), List.of(
                 Ingredient.ofItems(Items.OAK_SAPLING),
                 Ingredient.ofItems(Items.GUNPOWDER)));
