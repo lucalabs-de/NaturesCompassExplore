@@ -40,10 +40,8 @@ public class NaturesCompassItem extends Item {
         Identifier associatedBiomeId = getBiomeId(stack);
         Optional<Biome> associatedBiome = BiomeUtils.getBiomeForIdentifier(world, associatedBiomeId);
 
-        if (associatedBiome.isPresent()) {
-            tooltip.add(Text.literal(BiomeUtils.getBiomeNameForDisplay(world, associatedBiome.get()))
-                    .formatted(Formatting.GOLD));
-        }
+        associatedBiome.ifPresent(biome -> tooltip.add(Text.literal(BiomeUtils.getBiomeNameForDisplay(world, biome))
+                .formatted(Formatting.GOLD)));
     }
 
     @Override
@@ -51,14 +49,13 @@ public class NaturesCompassItem extends Item {
         if (!world.isClient()) {
             ServerWorld serverWorld = (ServerWorld) world;
             BlockPos curPos = entity.getBlockPos();
-            // TODO what to do with SECOND_CLOSEST_NOT_FOUND case?
             switch (getState(stack)) {
                 case INACTIVE:
                     if (hasBiomeId(stack)) {
                         searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
                     }
                     break;
-                case FOUND_SECOND_CLOSEST:
+                case FOUND_SECOND_CLOSEST_MIN_DIST:
                     NaturesCompass.LOGGER.info("found second closest");
                     if (!isClosestStillValid(stack, curPos)) {
                         NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
@@ -82,13 +79,17 @@ public class NaturesCompassItem extends Item {
         }
     }
 
-    public void succeedFirst(ItemStack stack, int x, int z, int xO, int zO, int samples) {
-        setClosestFound(stack, x, z, xO, zO, samples);
-    }
+    public void foundBiome(ItemStack stack, int x, int z, int xO, int zO, int samples) {
+        switch (getState(stack)) {
+            case SEARCHING:
+                setClosestFound(stack, x, z, xO, zO, samples);
+                // TODO start second closest search
+                break;
+            case FOUND_CLOSEST:
+                setSecondClosestFound(stack, x, z, xO, zO, samples);
+                break;
+        }
 
-    public void succeedSecond(ItemStack stack, int x, int z, int xO, int zO, int samples) {
-        setSecondClosestFound(stack, x, z, xO, zO, samples);
-        worker = null;
     }
 
     public void fail(ItemStack stack, int searchRadius, int samples) {
@@ -133,9 +134,9 @@ public class NaturesCompassItem extends Item {
 
     public void setSecondClosestFound(ItemStack stack, int x, int z, int xO, int zO, int samples) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_SECOND_CLOSEST.getId());
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_SECOND_CLOSEST_MIN_DIST.getId());
 
-            // ensure this is actually farther away than the closest biome (our sampling might have gotten unlucky)
+            // ensure this is actually farther away than the closest biome (our sampling might have gotten unlucky, or two biomes are really close together)
             int closestX = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
             int closestZ = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
 
@@ -156,7 +157,7 @@ public class NaturesCompassItem extends Item {
 
     public void setSecondClosestNotFound(ItemStack stack, int searchRadius, int samples) {
         if (ItemUtils.verifyNBT(stack)) {
-            stack.getNbt().putInt(NbtProperties.STATE, CompassState.SECOND_CLOSEST_NOT_FOUND.getId());
+            stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_SECOND_CLOSEST_MIN_DIST.getId());
             stack.getNbt().putInt(NbtProperties.SEARCH_RADIUS, searchRadius);
             stack.getNbt().putInt(NbtProperties.SAMPLES, samples);
         }
@@ -238,7 +239,7 @@ public class NaturesCompassItem extends Item {
         }
 
         // if someone reads this and knows how to do this without the square root, lmk
-        if (getState(stack) == CompassState.FOUND_SECOND_CLOSEST) {
+        if (getState(stack) == CompassState.FOUND_SECOND_CLOSEST_MIN_DIST) {
             Vec3d origin = getOriginPos(stack).toCenterPos();
             Vec3d closest = getFoundBiomePos(stack).toCenterPos();
             Vec3d current = playerPos.toCenterPos();

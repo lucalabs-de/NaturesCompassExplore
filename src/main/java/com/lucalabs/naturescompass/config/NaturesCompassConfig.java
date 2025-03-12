@@ -25,7 +25,7 @@ public class NaturesCompassConfig {
 
     public static int maxSamples = 50000;
     public static int radiusModifier = 2500;
-    public static int sampleSpaceModifier = 16;
+    public static int sampleIntervalModifier = 16;
 
     public static boolean fixBiomeNames = true;
     public static boolean pointToClosest = true;
@@ -47,7 +47,7 @@ public class NaturesCompassConfig {
                 try {
                     maxSamples = data.common.maxSamples;
                     radiusModifier = data.common.radiusModifier;
-                    sampleSpaceModifier = data.common.sampleSpaceModifier;
+                    sampleIntervalModifier = data.common.sampleIntervalModifier;
 
                     fixBiomeNames = data.client.fixBiomeNames;
                     pointToClosest = data.common.pointToClosestBiome;
@@ -74,7 +74,7 @@ public class NaturesCompassConfig {
                     new Data.Common(
                             maxSamples,
                             radiusModifier,
-                            sampleSpaceModifier,
+                            sampleIntervalModifier,
                             pointToClosest,
                             lootChance,
                             fromBiomeIdList(lootableBiomes),
@@ -317,8 +317,8 @@ public class NaturesCompassConfig {
             private final String radiusModifierComment = "biomeSize * radiusModifier = maxSearchRadius. Raising this value will increase search accuracy but will potentially make the process more resource intensive.";
             private final int radiusModifier;
 
-            private final String sampleSpaceModifierComment = "biomeSize * sampleSpaceModifier = sampleSpace. Lowering this value will increase search accuracy but will make the process more resource intensive.";
-            private final int sampleSpaceModifier;
+            private final String sampleIntervalModifierComment = "biomeSize * sampleIntervalModifier = sampleInterval. Lowering this value will increase search accuracy but will make the process more resource intensive.";
+            private final int sampleIntervalModifier;
 
             private final String pointToClosestBiomeComment = "Instead of calibrating the compass to a fixed biome, it will always point at the matching biome closest to the players position. Disable to improve performance.";
             private final boolean pointToClosestBiome;
@@ -334,14 +334,14 @@ public class NaturesCompassConfig {
             private Common(
                     int maxSamples,
                     int radiusModifier,
-                    int sampleSpaceModifier,
+                    int sampleIntervalModifier,
                     boolean pointToClosest,
                     float lootChance,
                     List<String> lootableBiomes,
                     List<CalibrationRecipe> recipes) {
                 this.maxSamples = maxSamples;
                 this.radiusModifier = radiusModifier;
-                this.sampleSpaceModifier = sampleSpaceModifier;
+                this.sampleIntervalModifier = sampleIntervalModifier;
                 this.pointToClosestBiome = pointToClosest;
                 this.lootChance = lootChance;
                 this.lootableBiomes = lootableBiomes;

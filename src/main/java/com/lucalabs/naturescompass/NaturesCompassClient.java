@@ -79,7 +79,7 @@ public class NaturesCompassClient implements ClientModInitializer {
 					NaturesCompassItem compassItem = (NaturesCompassItem) stack.getItem();
 					BlockPos pos;
 					CompassState curState = compassItem.getState(stack);
-					if (curState == CompassState.FOUND_CLOSEST || curState == CompassState.FOUND_SECOND_CLOSEST) {
+					if (curState == CompassState.FOUND_CLOSEST || curState == CompassState.FOUND_SECOND_CLOSEST_MIN_DIST) {
 						pos = compassItem.getFoundBiomePos(stack);
 					} else {
 						pos = world.getSpawnPos();

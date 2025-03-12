@@ -14,8 +14,8 @@ import net.minecraft.world.biome.source.BiomeCoords;
 
 public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
 
-    public final int maxRadius;
-    private final int sampleSpace;
+    private final int maxRadius;
+    private final int sampleInterval;
     private final int maxSamples;
     private final ServerWorld world;
     private final Identifier biomeId;
@@ -29,33 +29,40 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     private int z;
     private int[] yValues;
     private int length;
-    private boolean foundFirst;
     private boolean finished;
-    private int lastRadiusThreshold;
 
     public BiomeSearchWorker(ServerWorld world, ItemStack stack, Biome biome, BlockPos startPos) {
+        this(world, stack, biome, startPos, 0);
+    }
+
+    public BiomeSearchWorker(ServerWorld world, ItemStack stack, Biome biome, BlockPos startPos, int minRadius) {
         this.world = world;
         this.stack = stack;
         this.startPos = startPos;
-        x = startPos.getX();
-        z = startPos.getZ();
-        yValues = MathHelper.stream(startPos.getY(), world.getBottomY() + 1, world.getTopY(), 64).toArray();
-        sampleSpace = NaturesCompassConfig.sampleSpaceModifier * BiomeUtils.getBiomeSize(world);
+
+        sampleInterval = NaturesCompassConfig.sampleIntervalModifier * BiomeUtils.getBiomeSize(world);
         maxSamples = NaturesCompassConfig.maxSamples;
         maxRadius = NaturesCompassConfig.radiusModifier * BiomeUtils.getBiomeSize(world);
-        nextLength = sampleSpace;
+
+        int minRadiusInSamples = minRadius / sampleInterval;
+
+        x = startPos.getX() - minRadiusInSamples * sampleInterval;
+        z = startPos.getZ() + minRadiusInSamples * sampleInterval;
+
+        yValues = MathHelper.stream(startPos.getY(), world.getBottomY() + 1, world.getTopY(), 64).toArray();
+
+        nextLength = (2 * minRadiusInSamples + 1) * sampleInterval;
         length = 0;
-        samples = 0;
         direction = Direction.UP;
+
         finished = false;
-        foundFirst = false;
+        samples = 0;
         biomeId = BiomeUtils.getIdentifierForBiome(world, biome);
-        lastRadiusThreshold = 0;
     }
 
     public void start() {
-        if (maxRadius > 0 && sampleSpace > 0) {
-            NaturesCompass.LOGGER.info("Starting search: {} sample space, {} max samples, {} max radius", sampleSpace, maxSamples, maxRadius);
+        if (maxRadius > 0 && sampleInterval > 0) {
+            NaturesCompass.LOGGER.info("Starting search: {} sample space, {} max samples, {} max radius", sampleInterval, maxSamples, maxRadius);
             WorldWorkerManager.addWorker(this);
         } else {
             fail();
@@ -71,13 +78,13 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     public boolean doWork() {
         if (hasWork()) {
             if (direction == Direction.NORTH) {
-                z -= sampleSpace;
+                z -= sampleInterval;
             } else if (direction == Direction.EAST) {
-                x += sampleSpace;
+                x += sampleInterval;
             } else if (direction == Direction.SOUTH) {
-                z += sampleSpace;
+                z += sampleInterval;
             } else if (direction == Direction.WEST) {
-                x -= sampleSpace;
+                x -= sampleInterval;
             }
 
             int sampleX = BiomeCoords.fromBlock(x);
@@ -88,33 +95,22 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                 final Biome biomeAtPos = world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(sampleX, sampleY, sampleZ, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
                 final Identifier biomeAtPosID = BiomeUtils.getIdentifierForBiome(world, biomeAtPos);
                 if (biomeAtPosID != null && biomeAtPosID.equals(biomeId)) {
-                    if (!foundFirst) {
-                        succeedFirst();
-                        foundFirst = true;
-                        return false; // TODO temporary to make the mod work
-//                        return true;
-                    } else {
-                        succeedSecond();
-                        return false;
-                    }
+                    succeed();
                 }
             }
 
             samples++;
-            length += sampleSpace;
+            length += sampleInterval;
             if (length >= nextLength) {
                 if (direction != Direction.UP) {
-                    nextLength += sampleSpace;
+                    nextLength += sampleInterval;
                     direction = direction.rotateYClockwise();
                 } else {
                     direction = Direction.NORTH;
                 }
                 length = 0;
             }
-            int radius = getRadius();
-            if (radius > 500 && radius / 500 > lastRadiusThreshold) {
-                lastRadiusThreshold = radius / 500;
-            }
+
         }
 
         if (hasWork()) {
@@ -126,15 +122,9 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
         return false;
     }
 
-    private void succeedFirst() {
-        NaturesCompass.LOGGER.info("Search succeeded once: {} radius, {} samples", getRadius(), samples);
-        NaturesCompass.NATURES_COMPASS_ITEM.succeedFirst(stack, x, z, this.x, this.z, samples);
-        finished = true; // TODO temporary to make the mod work
-    }
-
-    private void succeedSecond() {
-        NaturesCompass.LOGGER.info("Search succeeded twice: {} radius, {} samples", getRadius(), samples);
-        NaturesCompass.NATURES_COMPASS_ITEM.succeedSecond(stack, x, z, this.x, this.z, samples);
+    private void succeed() {
+        NaturesCompass.LOGGER.info("Search succeeded: {} radius, {} samples", getRadius(), samples);
+        NaturesCompass.NATURES_COMPASS_ITEM.foundBiome(stack, x, z, this.x, this.z, samples);
         finished = true;
     }
 
