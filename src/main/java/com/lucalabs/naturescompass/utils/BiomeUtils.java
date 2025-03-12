@@ -6,12 +6,15 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeCoords;
 
 import java.util.Optional;
 
@@ -27,6 +30,33 @@ public abstract class BiomeUtils {
 
     public static Optional<Biome> getBiomeForIdentifier(World world, Identifier id) {
         return getBiomeRegistry(world).getOrEmpty(id);
+    }
+
+
+    @Environment(EnvType.SERVER)
+    public static boolean isBiomeAtPositionEqual(ServerWorld world, Identifier biomeId, Vec3i pos) {
+        Identifier id = getIdentifierForBiome(world, getBiomeAtPosition(world, pos));
+        return biomeId.equals(id);
+    }
+
+    @Environment(EnvType.SERVER)
+    public static boolean isBiomeAtPositionEqual(ServerWorld world, Identifier biomeId, int x, int y, int z) {
+        Identifier id = getIdentifierForBiome(world, getBiomeAtPosition(world, x, y, z));
+        return biomeId.equals(id);
+    }
+
+    @Environment(EnvType.SERVER)
+    public static Biome getBiomeAtPosition(ServerWorld world, Vec3i pos) {
+        return getBiomeAtPosition(world, pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Environment(EnvType.SERVER)
+    public static Biome getBiomeAtPosition(ServerWorld world, int x, int y, int z) {
+        int biomeX = BiomeCoords.fromBlock(x);
+        int biomeY = BiomeCoords.fromBlock(y);
+        int biomeZ = BiomeCoords.fromBlock(z);
+
+        return world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(x, y, z, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
     }
 
     public static int getBiomeSize(World world) {
@@ -71,22 +101,10 @@ public abstract class BiomeUtils {
         return I18n.translate(Util.createTranslationKey("biome", getIdentifierForBiome(world, biome)));
     }
 
-    private static String convertToRegex(String glob) {
-        StringBuilder regex = new StringBuilder("^");
-        for (char i = 0; i < glob.length(); i++) {
-            char c = glob.charAt(i);
-            if (c == '*') {
-                regex.append(".*");
-            } else if (c == '?') {
-                regex.append(".");
-            } else if (c == '.') {
-                regex.append("\\.");
-            } else {
-                regex.append(c);
-            }
-        }
-        regex.append("$");
-        return regex.toString();
+    public record BoundingBox(BlockPos nw, BlockPos se) {
+       int getMaxDistanceFrom(BlockPos reference) {
+           // TODO
+           return 0;
+       }
     }
-
 }

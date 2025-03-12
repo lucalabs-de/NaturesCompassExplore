@@ -4,6 +4,7 @@ import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
 import com.lucalabs.naturescompass.utils.CompassState;
 import com.lucalabs.naturescompass.utils.ItemUtils;
+import com.lucalabs.naturescompass.workers.BiomeMeasureWorker;
 import com.lucalabs.naturescompass.workers.BiomeSearchWorker;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.item.TooltipContext;
@@ -25,7 +26,8 @@ import java.util.UUID;
 
 public class NaturesCompassItem extends Item {
 
-    private BiomeSearchWorker worker;
+    private BiomeSearchWorker searchWorker;
+    private BiomeMeasureWorker measureWorker;
 
     public NaturesCompassItem() {
         super(new FabricItemSettings().maxCount(1));
@@ -70,19 +72,56 @@ public class NaturesCompassItem extends Item {
         if (optionalBiome.isPresent()) {
             setState(stack, CompassState.SEARCHING);
 
-            if (worker != null) {
-                worker.stop();
+            if (searchWorker != null) {
+                searchWorker.stop();
             }
 
-            worker = new BiomeSearchWorker(world, stack, optionalBiome.get(), pos);
-            worker.start();
+            searchWorker = new BiomeSearchWorker(
+                    world,
+                    optionalBiome.get(),
+                    pos,
+                    (x, z, s) -> foundBiome(world, stack, x, z, pos.getX(), pos.getZ(), s),
+                    (r, s) -> fail(stack, r, s));
+
+            searchWorker.start();
         }
     }
 
-    public void foundBiome(ItemStack stack, int x, int z, int xO, int zO, int samples) {
+    public void searchForSecondClosestBiome(ServerWorld world, ItemStack stack, BlockPos origin, BlockPos closestBiome) {
+        Identifier biomeId = getBiomeId(stack);
+        Optional<Biome> optionalBiome = BiomeUtils.getBiomeForIdentifier(world, biomeId);
+
+        if (optionalBiome.isPresent()) {
+
+            if (measureWorker != null) {
+                measureWorker.stop();
+            }
+
+            measureWorker = new BiomeMeasureWorker(world, closestBiome, (boundingBox) -> {
+
+                if (searchWorker != null) {
+                    searchWorker.stop();
+                }
+
+                searchWorker = new BiomeSearchWorker(
+                        world,
+                        optionalBiome.get(),
+                        origin,
+                        (x, z, s) -> foundBiome(world, stack, x, z, origin.getX(), origin.getZ(), s),
+                        (r, s) -> fail(stack, r, s));
+
+                searchWorker.start();
+            });
+
+            measureWorker.start();
+        }
+    }
+
+    public void foundBiome(ServerWorld world, ItemStack stack, int x, int z, int xO, int zO, int samples) {
         switch (getState(stack)) {
             case SEARCHING:
                 setClosestFound(stack, x, z, xO, zO, samples);
+                searchForSecondClosestBiome(world, stack, new BlockPos(xO, 0, zO), new BlockPos(x, 0, z));
                 // TODO start second closest search
                 break;
             case FOUND_CLOSEST:
@@ -99,7 +138,7 @@ public class NaturesCompassItem extends Item {
             setClosestNotFound(stack, searchRadius, samples);
         }
 
-        worker = null;
+        searchWorker = null;
     }
 
     public UUID getUuid(ItemStack stack) {
