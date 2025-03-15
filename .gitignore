@@ -9,6 +9,7 @@ ehthumbs.db
 /.gradle
 /build
 *.launch
+/logs
 
 # ForgeGradle
 /run

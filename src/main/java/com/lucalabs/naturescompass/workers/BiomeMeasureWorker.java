@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Stack;
 import java.util.TreeSet;
@@ -16,23 +17,20 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
 
     private final ServerWorld world;
     private final Identifier biomeId;
-    private final int[] yValues;
+    private final int[] yValues; // TODO check all y values
     private final int sampleInterval;
 
     private final BlockPos origin;
-
+    private final TreeSet<GridSquare> visited;
+    private final TreeSet<GridSquare> outsideBiome;
+    private final Stack<GridSquare> steps;
+    private final Callback callback;
     private int maxX;
     private int maxZ;
     private int minX;
     private int minZ;
     private boolean finished;
-
     private GridSquare current;
-    private TreeSet<GridSquare> visited;
-    private TreeSet<GridSquare> outsideBiome;
-    private Stack<GridSquare> steps;
-
-    private final Callback callback;
     private long time;
 
     public BiomeMeasureWorker(ServerWorld world, BlockPos biome, Callback callback) {
@@ -51,17 +49,23 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         this.minX = this.origin.getX();
         this.minZ = this.origin.getZ();
 
+        this.visited = new TreeSet<>();
+        this.outsideBiome = new TreeSet<>();
+        this.steps = new Stack<>();
+
         this.current = new GridSquare(0, 0);
     }
 
     @Override
     public boolean doWork() {
         steps.push(current);
+        visited.add(current);
 
-        byte crossBiomePattern = getCrossBiomePatternAt(current);
+        byte biomePattern = getBiomePattern(current);
+        String biomePatternString = String.format("%8s", Integer.toBinaryString(biomePattern & 0xFF)).replace(' ', '0');
 
         // corners are the only candidates that can change the bounding box
-        if (isCorner(crossBiomePattern)) {
+        if (isCorner(biomePattern)) {
             Vec3i coords = current.getCoordinates(origin, sampleInterval);
 
             if (coords.getX() > this.maxX) {
@@ -77,17 +81,21 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
             }
         }
 
-        if (!isOnBorder(crossBiomePattern)) {
+        if (!isOnBorder(biomePattern)) {
             // when we're not at a border, check if we are at an inner corner or not
-            byte diagonalBiomePattern = getDiagonalBiomePatternAt(current);
-            if (isFullyInside((byte) (diagonalBiomePattern + crossBiomePattern))) {
-                // if not, just move east to eventually reach the border. This should only happen in the beginning.
-                this.current = current.getNeighbour(Direction.EAST);
-                return true;
+            if (isFullyInside(biomePattern)) {
+                // if not, just move east to eventually reach the border. This should only happen in the beginning and when backtracking.
+                GridSquare neighbourEast = current.getNeighbour(Direction.EAST);
+                if (!visited.contains(neighbourEast)) {
+                    this.current = current.getNeighbour(Direction.EAST);
+                    return true;
+                } else {
+                    return backtrack();
+                }
             } else {
                 byte visitedPattern = getCrossVisitedPatternAt(current);
                 Direction nextDirection =
-                        decideNextDirectionAtInnerCorner((byte) (diagonalBiomePattern + crossBiomePattern), visitedPattern);
+                        decideNextDirectionAtInnerCorner(biomePattern, visitedPattern);
 
                 if (nextDirection != Direction.UP) {
                     this.current = current.getNeighbour(nextDirection);
@@ -99,7 +107,7 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         } else {
             byte visitedPattern = getCrossVisitedPatternAt(current);
 
-            Direction nextDirection = decideNextDirectionAtBorder(crossBiomePattern, visitedPattern);
+            Direction nextDirection = decideNextDirectionAtBorder(biomePattern, visitedPattern);
 
             if (nextDirection != Direction.UP) {
                 this.current = current.getNeighbour(nextDirection);
@@ -125,14 +133,20 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         finished = true;
     }
 
+    private void succeed() {
+        long duration = System.currentTimeMillis() - time;
+        NaturesCompass.LOGGER.info("Measuring biome {} took {}ms", biomeId, duration);
+        NaturesCompass.LOGGER.info("Biome {} has bounding box of {}x{} blocks", biomeId, maxX - minX, maxZ - minZ);
+        callback.onBoundingRectangleComputed(
+                new BiomeUtils.BoundingBox(
+                        new BlockPos(minX, origin.getY(), minZ),
+                        new BlockPos(maxX, origin.getY(), maxZ)));
+    }
+
     private boolean backtrack() {
         if (steps.size() < 2) {
             finished = true;
-            callback.onBoundingRectangleComputed(
-                    new BiomeUtils.BoundingBox(
-                            new BlockPos(minX, origin.getY(), minZ),
-                            new BlockPos(maxX, origin.getY(), maxZ)));
-
+            succeed();
             return false;
         }
 
@@ -147,17 +161,58 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
     //         c 3 b
     // where the bits are 1 if the corresponding (center of the) grid cell is inside the biome
     private Direction decideNextDirectionAtInnerCorner(byte biomePattern, byte visitedPattern) {
-        byte combinedPattern = (byte) (biomePattern | visitedPattern);
+        byte validPositions = (byte) (biomePattern & ~visitedPattern);
+        byte validNeighbours = getNeighboursOnBorder(biomePattern);
 
-        if (isBitSetAt(visitedPattern, 0)) {
-            // TODO
+        String validPositionsString = String.format("%8s", Integer.toBinaryString(validPositions & 0xFF)).replace(' ', '0');
+        String validNeighboursString = String.format("%8s", Integer.toBinaryString(validNeighbours & 0xFF)).replace(' ', '0');
+
+        Direction result = Direction.NORTH;
+
+        for (int i = 0; i < 4; i++) {
+            if (isBitSetAt(validNeighbours, i) && isBitSetAt(validPositions, i)) {
+                return result;
+            }
+
+            result = result.rotateYClockwise();
         }
 
         return Direction.UP;
     }
 
     private Direction decideNextDirectionAtBorder(byte biomePattern, byte visitedPattern) {
-        // TODO
+        byte validPositions = (byte) (biomePattern & ~visitedPattern);
+        byte validNeighbours = getNeighboursInBorderVicinity(biomePattern);
+
+        String validPositionsString = String.format("%8s", Integer.toBinaryString(validPositions & 0xFF)).replace(' ', '0');
+        String biomePatternString = String.format("%8s", Integer.toBinaryString(biomePattern & 0xFF)).replace(' ', '0');
+        String visitedPatternString = String.format("%8s", Integer.toBinaryString(visitedPattern & 0xFF)).replace(' ', '0');
+        String validNeighboursString = String.format("%8s", Integer.toBinaryString(validNeighbours & 0xFF)).replace(' ', '0');
+
+        if (isExactlyOneSet(visitedPattern)) {
+            // continue in the direction we were going if possible
+            Direction next = Direction.SOUTH;
+            for (int i = 0; i < 4; i++) {
+                if (isBitSetAt(visitedPattern, i)) {
+                    if (isBitSetAt(validPositions, (i + 2) % 4)) {
+                        return next;
+                    } else {
+                        break; // we know that only one bit is set
+                    }
+                }
+                next = next.rotateYClockwise();
+            }
+        }
+
+        Direction next = Direction.NORTH;
+        for (int i = 0; i < 4; i++) {
+            if (isBitSetAt(validPositions, i) && isBitSetAt(validNeighbours, i)) {
+                return next;
+            }
+
+            next = next.rotateYClockwise();
+        }
+
         return Direction.UP;
     }
 
@@ -165,7 +220,8 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         // the pattern represents a corner iff two subsequent indices (modulo 4) are 0 (i.e. outside the biome)
         for (int i = 0; i < 3; i++) {
             byte mask = (byte) (3 << i);
-            if ((~pattern & mask) != 0) {
+            byte masked = (byte) (~pattern & mask);
+            if (masked != 0 && !isExactlyOneSet(masked)) {
                 return true;
             }
         }
@@ -174,11 +230,42 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
     }
 
     private boolean isOnBorder(byte pattern) {
-        return (pattern << 4) != 0;
+        // we need to use toUnsignedInt here because Java promotes bytes to (signed) int before doing anything. This
+        // causes trouble when the most significant bit is 1, i.e. the numeric value of our byte is negative. This
+        // language makes me sad.
+        return Byte.toUnsignedInt(pattern) % 16 != 15;
+    }
+
+    private byte getNeighboursInBorderVicinity(byte pattern) {
+        byte result = 0;
+        for (int i = 0; i < 4; i++) {
+            // why doesn't -1 % 4 = 3? Why does this language have to be so annoying?
+            if (!isBitSetAt(pattern, (i + 1) % 4) || !isBitSetAt(pattern, Math.floorMod(i - 1, 4))) {
+                result |= (byte) (1 << i);
+            }
+        }
+
+        return result;
     }
 
     private boolean isFullyInside(byte pattern) {
-        return pattern == 0;
+        return pattern == (byte) 0b1111_1111;
+    }
+
+    private byte getNeighboursOnBorder(byte biomePattern) {
+        byte result = 0;
+        for (int i = 0; i < 4; i++) {
+            if (!isBitSetAt(biomePattern, 4 + i)) {
+                result |= (byte) (1 << i);
+                result |= (byte) (1 << ((i + 1) % 4));
+            }
+        }
+
+        return result;
+    }
+
+    private byte getBiomePattern(GridSquare s) {
+        return (byte) (getCrossBiomePatternAt(s) | getDiagonalBiomePatternAt(s));
     }
 
     private byte getCrossBiomePatternAt(GridSquare s) {
@@ -186,15 +273,17 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         byte pattern = 0;
         for (int i = 0; i < 4; i++) {
             GridSquare n = s.getNeighbour(direction);
+            direction = direction.rotateYClockwise();
 
             if (outsideBiome.contains(n)) {
                 continue;
             }
 
             if (BiomeUtils.isBiomeAtPositionEqual(world, biomeId, n.getCoordinates(origin, sampleInterval))) {
-                pattern += (byte) (1 << i);
+                pattern |= (byte) (1 << i);
+            } else {
+                outsideBiome.add(n);
             }
-            direction = direction.rotateYClockwise();
         }
 
         return pattern;
@@ -205,15 +294,17 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         byte pattern = 0;
         for (int i = 0; i < 4; i++) {
             GridSquare n = s.getDiagonalNeighbour(direction);
+            direction = direction.rotateYClockwise();
 
             if (outsideBiome.contains(n)) {
                 continue;
             }
 
             if (BiomeUtils.isBiomeAtPositionEqual(world, biomeId, n.getCoordinates(origin, sampleInterval))) {
-                pattern += (byte) (1 << 3 << i);
+                pattern |= (byte) (1 << 4 << i);
+            } else {
+                outsideBiome.add(n);
             }
-            direction = direction.rotateYClockwise();
         }
 
         return pattern;
@@ -224,10 +315,11 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         byte pattern = 0;
         for (int i = 0; i < 4; i++) {
             GridSquare n = s.getNeighbour(direction);
-            if (visited.contains(n)) {
-                pattern += (byte) (1 << i);
-            }
             direction = direction.rotateYClockwise();
+
+            if (visited.contains(n)) {
+                pattern |= (byte) (1 << i);
+            }
         }
 
         return pattern;
@@ -241,12 +333,17 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         return (pattern & (1 << i)) != 0;
     }
 
+    private boolean isExactlyOneSet(byte pattern) {
+        int patternI = Byte.toUnsignedInt(pattern);
+        return pattern != 0 && (patternI & (patternI - 1)) == 0;
+    }
+
     @FunctionalInterface
     public interface Callback {
         void onBoundingRectangleComputed(BiomeUtils.BoundingBox b);
     }
 
-    private record GridSquare(int x, int z) {
+    private record GridSquare(int x, int z) implements Comparable<GridSquare> {
         Vec3i getCoordinates(Vec3i relativeTo, int gridSize) {
             return new Vec3i(relativeTo.getX() + x * gridSize, relativeTo.getY(), relativeTo.getZ() + z * gridSize);
         }
@@ -271,6 +368,15 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
                 case EAST -> new GridSquare(x + 1, z + 1);
                 default -> this;
             };
+        }
+
+        @Override
+        public int compareTo(@NotNull BiomeMeasureWorker.GridSquare other) {
+            if (this.x == other.x) {
+                return this.z - other.z;
+            }
+
+            return this.x - other.x;
         }
     }
 }

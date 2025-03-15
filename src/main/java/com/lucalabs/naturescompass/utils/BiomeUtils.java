@@ -32,31 +32,30 @@ public abstract class BiomeUtils {
         return getBiomeRegistry(world).getOrEmpty(id);
     }
 
-
-    @Environment(EnvType.SERVER)
     public static boolean isBiomeAtPositionEqual(ServerWorld world, Identifier biomeId, Vec3i pos) {
         Identifier id = getIdentifierForBiome(world, getBiomeAtPosition(world, pos));
         return biomeId.equals(id);
     }
 
-    @Environment(EnvType.SERVER)
     public static boolean isBiomeAtPositionEqual(ServerWorld world, Identifier biomeId, int x, int y, int z) {
         Identifier id = getIdentifierForBiome(world, getBiomeAtPosition(world, x, y, z));
         return biomeId.equals(id);
     }
 
-    @Environment(EnvType.SERVER)
     public static Biome getBiomeAtPosition(ServerWorld world, Vec3i pos) {
         return getBiomeAtPosition(world, pos.getX(), pos.getY(), pos.getZ());
     }
 
-    @Environment(EnvType.SERVER)
     public static Biome getBiomeAtPosition(ServerWorld world, int x, int y, int z) {
         int biomeX = BiomeCoords.fromBlock(x);
         int biomeY = BiomeCoords.fromBlock(y);
         int biomeZ = BiomeCoords.fromBlock(z);
 
-        return world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(x, y, z, world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
+        return world.getChunkManager().getChunkGenerator().getBiomeSource().getBiome(
+                biomeX,
+                biomeY,
+                biomeZ,
+                world.getChunkManager().getNoiseConfig().getMultiNoiseSampler()).value();
     }
 
     public static int getBiomeSize(World world) {
@@ -102,9 +101,28 @@ public abstract class BiomeUtils {
     }
 
     public record BoundingBox(BlockPos nw, BlockPos se) {
-       int getMaxDistanceFrom(BlockPos reference) {
-           // TODO
-           return 0;
-       }
+        /// Computes the maximum cardinal direction distance of any point in the bounding box to the reference
+        public int getMaxDistanceFrom(BlockPos reference) {
+            int distX;
+            int distZ;
+
+            if (nw.getX() > reference.getX()) { // left of bounding box
+                distX = se.getX() - reference.getX();
+            } else if (se.getX() < reference.getX()) { // right of bounding box
+                distX = reference.getX() - nw.getX();
+            } else { // inside bounding X slice
+                distX = Math.max(reference.getX() - nw.getX(), se.getX() - reference.getX());
+            }
+
+            if (nw.getZ() > reference.getZ()) { // below bounding box
+                distZ = se.getZ() - reference.getZ();
+            } else if (se.getZ() < reference.getZ()) { // above bounding box
+                distZ = reference.getZ() - nw.getZ();
+            } else { // inside bounding Z slice
+                distZ = Math.max(reference.getZ() - nw.getZ(), se.getZ() - reference.getZ());
+            }
+
+            return Math.max(distX, distZ);
+        }
     }
 }

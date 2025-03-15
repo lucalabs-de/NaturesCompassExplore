@@ -1,6 +1,7 @@
 package com.lucalabs.naturescompass.network;
 
 import com.lucalabs.naturescompass.NaturesCompass;
+import com.lucalabs.naturescompass.items.NaturesCompassItem;
 import com.lucalabs.naturescompass.utils.ItemUtils;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -37,7 +38,7 @@ public class SearchPacket extends PacketByteBuf {
             ItemStack compass = inInv.isEmpty() ? underCursor : inInv;
             if (!compass.isEmpty()) {
                 final ServerWorld world = player.getServerWorld();
-                NaturesCompass.NATURES_COMPASS_ITEM.searchForBiome(world, compass, biomeID, pos);
+                ((NaturesCompassItem) compass.getItem()).searchForBiome(world, compass, biomeID, pos);
             }
         });
     }

@@ -103,10 +103,15 @@ public class NaturesCompassItem extends Item {
                     searchWorker.stop();
                 }
 
+                // the measurement works in 16x16 grids, so the actual maximum distance to a point in the biome might
+                // be up to 8 blocks larger
+                int maxDistance = boundingBox.getMaxDistanceFrom(origin) + 8;
+
                 searchWorker = new BiomeSearchWorker(
                         world,
                         optionalBiome.get(),
                         origin,
+                        maxDistance, // only start searching beyond the closest biome
                         (x, z, s) -> foundBiome(world, stack, x, z, origin.getX(), origin.getZ(), s),
                         (r, s) -> fail(stack, r, s));
 

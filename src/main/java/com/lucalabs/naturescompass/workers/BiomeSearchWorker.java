@@ -49,6 +49,8 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
             int minRadius,
             SuccessCallback successCallback,
             FailureCallback failureCallback) {
+        assert minRadius >= 0;
+
         this.successCallback = successCallback;
         this.failureCallback = failureCallback;
 
@@ -141,7 +143,6 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
 
     private void fail() {
         NaturesCompass.LOGGER.info("Search failed: {} radius, {} samples", getRadius(), samples);
-        NaturesCompass.NATURES_COMPASS_ITEM.fail(stack, roundRadius(getRadius(), 500), samples);
         failureCallback.onFailure(roundRadius(getRadius(), 500), samples);
         finished = true;
     }

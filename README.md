@@ -8,6 +8,7 @@ _Note that this deviates from other versions of this mod in that you generally f
 
 - Right-clicking a cartography table with the Nature's Compass opens the Biome Table, allowing you to calibrate the compass to a biome of your choice.
 - Pre-calibrated compasses can be found in dungeons to help you find rarer biomes. _(Can be disabled in the config)._
+- The compass always points to the current closest instance of a biome, not just to the closest biome at time of calibration.
 - When the compass is not pointing at a biome, it will point at the world spawn.
 - Support for modded biomes can be added through the config: Simply define what items calibrate the compass to each new biome!
 
