@@ -138,6 +138,7 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
                 }
 
                 slot.onQuickTransfer(originalStack, newStack);
+                slot.onTakeItem(player, newStack);
             } else if (invSlot <= 3) {
                 if (!this.insertItem(originalStack, 5, 41, false)) {
                     return ItemStack.EMPTY;
@@ -159,7 +160,6 @@ public class BiomeChoiceScreenHandler extends ScreenHandler {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTakeItem(player, newStack);
             this.sendContentUpdates();
         }
 
