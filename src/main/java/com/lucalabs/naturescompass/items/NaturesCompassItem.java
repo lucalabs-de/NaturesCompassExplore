@@ -26,10 +26,10 @@ import java.util.UUID;
 
 public class NaturesCompassItem extends Item {
 
-    private static final int MIN_BIOME_DISTANCE_MODIFIER = 200;
+    public static final int MIN_BIOME_DISTANCE_MODIFIER = 200;
 
-    private BiomeSearchWorker searchWorker;
-    private BiomeMeasureWorker measureWorker;
+    public BiomeSearchWorker searchWorker;
+    public BiomeMeasureWorker measureWorker;
 
     public NaturesCompassItem() {
         super(new FabricItemSettings().maxCount(1));
@@ -266,7 +266,7 @@ public class NaturesCompassItem extends Item {
         return getClosestBiomePos(stack);
     }
 
-    private BlockPos getClosestBiomePos(ItemStack stack) {
+    public BlockPos getClosestBiomePos(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
             int x = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
             int z = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
@@ -277,7 +277,7 @@ public class NaturesCompassItem extends Item {
         return BlockPos.ORIGIN;
     }
 
-    private BlockPos getOriginPos(ItemStack stack) {
+    public BlockPos getOriginPos(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
             int x = stack.getNbt().getInt(NbtProperties.ORIGIN_X);
             int z = stack.getNbt().getInt(NbtProperties.ORIGIN_Z);
@@ -288,7 +288,7 @@ public class NaturesCompassItem extends Item {
         return BlockPos.ORIGIN;
     }
 
-    private double getDistanceToSecondClosest(ItemStack stack) {
+    public double getDistanceToSecondClosest(ItemStack stack) {
         if (ItemUtils.verifyNBT(stack)) {
             return stack.getNbt().getDouble(NbtProperties.DISTANCE_TO_SECOND_CLOSEST);
         }
@@ -296,7 +296,7 @@ public class NaturesCompassItem extends Item {
         return 0.0;
     }
 
-    private boolean isClosestStillValid(ItemStack stack, BlockPos playerPos) {
+    public boolean isClosestStillValid(ItemStack stack, BlockPos playerPos) {
         if (!ItemUtils.verifyNBT(stack)) {
             NaturesCompass.LOGGER.error("NBT not valid");
             return false;
@@ -323,16 +323,16 @@ public class NaturesCompassItem extends Item {
         return true;
     }
 
-    private static class NbtProperties {
-        private static final String ID = "ID";
-        private static final String STATE = "State";
-        private static final String ORIGIN_X = "OriginX";
-        private static final String ORIGIN_Z = "OriginZ";
-        private static final String CLOSEST_X = "FoundX";
-        private static final String CLOSEST_Z = "FoundZ";
-        private static final String DISTANCE_TO_SECOND_CLOSEST = "FoundDist2";
-        private static final String SAMPLES = "Samples";
-        private static final String SEARCH_RADIUS = "SearchRadius";
-        private static final String BIOME = "BiomeID";
+    public static class NbtProperties {
+        public static final String ID = "ID";
+        public static final String STATE = "State";
+        public static final String ORIGIN_X = "OriginX";
+        public static final String ORIGIN_Z = "OriginZ";
+        public static final String CLOSEST_X = "FoundX";
+        public static final String CLOSEST_Z = "FoundZ";
+        public static final String DISTANCE_TO_SECOND_CLOSEST = "FoundDist2";
+        public static final String SAMPLES = "Samples";
+        public static final String SEARCH_RADIUS = "SearchRadius";
+        public static final String BIOME = "BiomeID";
     }
 }
