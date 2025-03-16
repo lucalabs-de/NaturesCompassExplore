@@ -90,7 +90,7 @@ public class NaturesCompassConfig {
 
     private static Path getFilePath() {
         if (configFilePath == null) {
-            configFilePath = FabricLoader.getInstance().getConfigDir().resolve(NaturesCompass.MODID + ".json");
+            configFilePath = FabricLoader.getInstance().getConfigDir().resolve(NaturesCompass.MOD_ID + ".json");
         }
         return configFilePath;
     }

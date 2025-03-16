@@ -1,0 +1,75 @@
+plugins {
+    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+    mavenCentral()
+    repositories {
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+        }
+        maven {
+            // location of a maven mirror for JEI files, as a fallback
+            name = "ModMaven"
+            url = "https://modmaven.dev/"
+            content {
+                includeGroup "mezz.jei"
+            }
+        }
+        maven {
+            url "https://www.cursemaven.com"
+            content {
+                includeGroup "curse.maven"
+            }
+        }
+        maven { url "https://maven.shedaniel.me" }
+        maven { url "https://maven.architectury.dev/" }
+        maven {
+            name = "TerraformersMC" //EMI
+            url = "https://maven.terraformersmc.com/"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+
+    // JEI / EMI integrations
+    modCompileOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}")
+    if (project.hasProperty('enable_jei') && project.enable_jei.toBoolean()) {
+        modRuntimeOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}")
+    }
+
+    modCompileOnly "dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}"
+    if (project.hasProperty('enable_emi') && project.enable_emi.toBoolean()) {
+        modLocalRuntime "dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+}
+
+java {
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}"}
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

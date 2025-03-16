@@ -27,15 +27,15 @@ import java.util.List;
 
 public class NaturesCompass implements ModInitializer {
 
-    public static final String MODID = "naturescompass";
-    public static final Logger LOGGER = LogManager.getLogger(MODID);
+    public static final String MOD_ID = "naturescompass";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static final NaturesCompassItem NATURES_COMPASS_ITEM = new NaturesCompassItem();
 
     public static final LootFunctionType CALIBRATE_RANDOMLY_LOOT_FUNCTION =
             Registry.register(
                     Registries.LOOT_FUNCTION_TYPE,
-                    Identifier.of(MODID, CalibrateRandomlyLootFunction.ID),
+                    Identifier.of(MOD_ID, CalibrateRandomlyLootFunction.ID),
                     new LootFunctionType(new CalibrateRandomlyLootFunction.Serializer()));
 
     public static List<Identifier> allowedBiomes;    public static final ScreenHandlerType<BiomeChoiceScreenHandler> BIOME_SCREEN_HANDLER =
@@ -48,9 +48,9 @@ public class NaturesCompass implements ModInitializer {
     public void onInitialize() {
         NaturesCompassConfig.load();
 
-        Registry.register(Registries.ITEM, new Identifier(MODID, "naturescompass"), NATURES_COMPASS_ITEM);
+        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "naturescompass"), NATURES_COMPASS_ITEM);
         Registry.register(Registries.RECIPE_SERIALIZER, CalibrationRecipeSerializer.ID, CalibrationRecipeSerializer.INSTANCE);
-        Registry.register(Registries.RECIPE_TYPE, Identifier.of(MODID, CalibrationRecipe.Type.ID), CalibrationRecipe.Type.INSTANCE);
+        Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, CalibrationRecipe.Type.ID), CalibrationRecipe.Type.INSTANCE);
 
         LootTableEvents.MODIFY.register(LootManager::addCompassesToLootTables);
 

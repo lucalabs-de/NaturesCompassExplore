@@ -1,11 +1,9 @@
 package com.lucalabs.naturescompass.mixins;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.config.NaturesCompassConfig;
 import com.lucalabs.naturescompass.recipes.CalibrationRecipe;
-import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
@@ -42,7 +40,7 @@ public class RecipeManagerMixin {
 
         // now we can add our new recipes
         for (Map.Entry<Identifier, List<Ingredient>> calibrationRecipeSpec : NaturesCompassConfig.calibrationRecipes.entrySet())  {
-            Identifier recipeIdentifier = Identifier.of(NaturesCompass.MODID, UUID.randomUUID().toString());
+            Identifier recipeIdentifier = Identifier.of(NaturesCompass.MOD_ID, UUID.randomUUID().toString());
 
             CalibrationRecipe recipe = new CalibrationRecipe(
                     calibrationRecipeSpec.getValue(),

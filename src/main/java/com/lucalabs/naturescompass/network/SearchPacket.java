@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class SearchPacket extends PacketByteBuf {
 
-    public static final Identifier ID = new Identifier(NaturesCompass.MODID, "search");
+    public static final Identifier ID = new Identifier(NaturesCompass.MOD_ID, "search");
 
     public SearchPacket(UUID compassId, Identifier biomeId, BlockPos pos) {
         super(Unpooled.buffer());

@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 public class SyncPacket extends PacketByteBuf {
 
-	public static final Identifier ID = new Identifier(NaturesCompass.MODID, "sync");
+	public static final Identifier ID = new Identifier(NaturesCompass.MOD_ID, "sync");
 
 	public SyncPacket(boolean canTeleport, List<Identifier> allowedBiomeIDs, ListMultimap<Identifier, Identifier> dimensionIDsForAllowedBiomeIDs) {
 		super(Unpooled.buffer());

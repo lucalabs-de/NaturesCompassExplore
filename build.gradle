@@ -12,6 +12,33 @@ base {
 }
 
 repositories {
+	mavenCentral()
+	repositories {
+		maven {
+			name = "Modrinth"
+			url = "https://api.modrinth.com/maven"
+		}
+		maven {
+			// location of a maven mirror for JEI files, as a fallback
+			name = "ModMaven"
+			url = "https://modmaven.dev/"
+			content {
+				includeGroup "mezz.jei"
+			}
+		}
+		maven {
+			url "https://www.cursemaven.com"
+			content {
+				includeGroup "curse.maven"
+			}
+		}
+		maven { url "https://maven.shedaniel.me" }
+		maven { url "https://maven.architectury.dev/" }
+		maven {
+			name = "TerraformersMC" //EMI
+			url = "https://maven.terraformersmc.com/"
+		}
+	}
 }
 
 test {
