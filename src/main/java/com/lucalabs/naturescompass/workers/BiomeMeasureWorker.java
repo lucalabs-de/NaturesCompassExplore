@@ -17,7 +17,7 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
 
     private final ServerWorld world;
     private final Identifier biomeId;
-    private final int[] yValues; // TODO check all y values
+    private final int[] yValues;
     private final int sampleInterval;
 
     private final BlockPos origin;
@@ -279,7 +279,7 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
                 continue;
             }
 
-            if (BiomeUtils.isBiomeAtPositionEqual(world, biomeId, n.getCoordinates(origin, sampleInterval))) {
+            if (BiomeUtils.isBiomeAtAnyYValueEqual(world, biomeId, n.getCoordinates(origin, sampleInterval), yValues)) {
                 pattern |= (byte) (1 << i);
             } else {
                 outsideBiome.add(n);
@@ -300,7 +300,7 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
                 continue;
             }
 
-            if (BiomeUtils.isBiomeAtPositionEqual(world, biomeId, n.getCoordinates(origin, sampleInterval))) {
+            if (BiomeUtils.isBiomeAtAnyYValueEqual(world, biomeId, n.getCoordinates(origin, sampleInterval), yValues)) {
                 pattern |= (byte) (1 << 4 << i);
             } else {
                 outsideBiome.add(n);

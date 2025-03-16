@@ -42,6 +42,20 @@ public abstract class BiomeUtils {
         return biomeId.equals(id);
     }
 
+    public static boolean isBiomeAtAnyYValueEqual(ServerWorld world, Identifier biomeId, Vec3i pos, int[] ys) {
+        return isBiomeAtAnyYValueEqual(world, biomeId, pos.getX(), ys, pos.getZ());
+    }
+
+    public static boolean isBiomeAtAnyYValueEqual(ServerWorld world, Identifier biomeId, int x, int[] ys, int z) {
+       for (int y : ys) {
+           if (isBiomeAtPositionEqual(world, biomeId, x, y, z)) {
+               return true;
+           }
+       }
+
+       return false;
+    }
+
     public static Biome getBiomeAtPosition(ServerWorld world, Vec3i pos) {
         return getBiomeAtPosition(world, pos.getX(), pos.getY(), pos.getZ());
     }

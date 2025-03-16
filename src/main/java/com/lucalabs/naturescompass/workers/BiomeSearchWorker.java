@@ -105,10 +105,8 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
                 x -= sampleInterval;
             }
 
-            for (int y : yValues) {
-                if (BiomeUtils.isBiomeAtPositionEqual(world, biomeId, x, y, z)) {
-                    succeed();
-                }
+            if (BiomeUtils.isBiomeAtAnyYValueEqual(world, biomeId, x, yValues, z)) {
+                succeed();
             }
 
             samples++;

@@ -48,23 +48,22 @@ public class NaturesCompassItem extends Item {
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (!world.isClient()) {
-            ServerWorld serverWorld = (ServerWorld) world;
-            BlockPos curPos = entity.getBlockPos();
-            switch (getState(stack)) {
-                case INACTIVE:
-                    if (hasBiomeId(stack)) {
-                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
-                    }
-                    break;
-                case FOUND_SECOND_CLOSEST_MIN_DIST:
-                    NaturesCompass.LOGGER.info("found second closest");
-                    if (!isClosestStillValid(stack, curPos)) {
-                        NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
-                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
-                    }
-            }
-        }
+//        if (!world.isClient()) {
+//            ServerWorld serverWorld = (ServerWorld) world;
+//            BlockPos curPos = entity.getBlockPos();
+//            switch (getState(stack)) {
+//                case INACTIVE:
+//                    if (hasBiomeId(stack)) {
+//                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+//                    }
+//                    break;
+//                case FOUND_SECOND_CLOSEST_MIN_DIST:
+//                    if (!isClosestStillValid(stack, curPos)) {
+//                        NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
+//                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+//                    }
+//            }
+//        }
     }
 
     public void searchForBiome(ServerWorld world, ItemStack stack, Identifier biomeId, BlockPos pos) {
@@ -127,7 +126,6 @@ public class NaturesCompassItem extends Item {
             case SEARCHING:
                 setClosestFound(stack, x, z, xO, zO, samples);
                 searchForSecondClosestBiome(world, stack, new BlockPos(xO, 0, zO), new BlockPos(x, 0, z));
-                // TODO start second closest search
                 break;
             case FOUND_CLOSEST:
                 setSecondClosestFound(stack, x, z, xO, zO, samples);

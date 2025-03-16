@@ -1,6 +1,5 @@
 package workers;
 
-import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
 import com.lucalabs.naturescompass.workers.BiomeMeasureWorker;
 import net.minecraft.Bootstrap;
@@ -98,7 +97,7 @@ public class BiomeMeasureWorkerTest {
                     Assertions.assertEquals(b.nw().getX(), correct.nw().getX());
                 });
 
-                while (w.doWork()) ;
+                while (w.doWork());
 
                 Assertions.assertTrue(callbackCalled.get());
             }
