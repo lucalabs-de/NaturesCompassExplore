@@ -88,6 +88,17 @@ public class NaturesCompassConfig {
         }
     }
 
+    public static Map<String, List<String>> getRawIngredientMap() {
+        List<Data.Common.CalibrationRecipe> recipes = fromIngredientMap(calibrationRecipes);
+        Map<String, List<String>> rawRecipes = new HashMap<>();
+
+        for (Data.Common.CalibrationRecipe r : recipes) {
+            rawRecipes.put(r.biomeIdentifier, r.ingredients);
+        }
+
+        return rawRecipes;
+    }
+
     private static Path getFilePath() {
         if (configFilePath == null) {
             configFilePath = FabricLoader.getInstance().getConfigDir().resolve(NaturesCompass.MOD_ID + ".json");
@@ -100,7 +111,7 @@ public class NaturesCompassConfig {
     }
 
     private static List<Identifier> toBiomeIdList(List<String> biomes) {
-       return biomes.stream().map(Identifier::new).toList();
+        return biomes.stream().map(Identifier::new).toList();
     }
 
     private static List<Identifier> getDefaultBiomes() {

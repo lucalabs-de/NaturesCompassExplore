@@ -8,6 +8,7 @@ import com.lucalabs.naturescompass.network.SearchPacket;
 import com.lucalabs.naturescompass.recipes.CalibrationRecipe;
 import com.lucalabs.naturescompass.recipes.CalibrationRecipeSerializer;
 import com.lucalabs.naturescompass.screens.BiomeChoiceScreenHandler;
+import mezz.jei.api.IModPlugin;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
@@ -48,6 +49,9 @@ public class NaturesCompass implements ModInitializer {
     public void onInitialize() {
         NaturesCompassConfig.load();
 
+//        NaturesCompassIntegrations.setRecipes(NaturesCompassConfig.getRawIngredientMap());
+        IModPlugin m;
+
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "naturescompass"), NATURES_COMPASS_ITEM);
         Registry.register(Registries.RECIPE_SERIALIZER, CalibrationRecipeSerializer.ID, CalibrationRecipeSerializer.INSTANCE);
         Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, CalibrationRecipe.Type.ID), CalibrationRecipe.Type.INSTANCE);
@@ -59,5 +63,9 @@ public class NaturesCompass implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(SearchPacket.ID, SearchPacket::apply);
 
         allowedBiomes = new ArrayList<>();
+    }
+
+    private void test(IModPlugin m) {
+        Identifier i = m.getPluginUid();
     }
 }

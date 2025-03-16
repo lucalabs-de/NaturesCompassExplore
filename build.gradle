@@ -1,104 +1,86 @@
 plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
-	id 'maven-publish'
-	id "com.modrinth.minotaur" version "2.+"
+    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 version = project.mod_version
 group = project.maven_group
 
 base {
-	archivesName = project.archives_base_name
+    archivesName = project.archives_base_name
 }
 
 repositories {
-	mavenCentral()
-	repositories {
-		maven {
-			name = "Modrinth"
-			url = "https://api.modrinth.com/maven"
-		}
-		maven {
-			// location of a maven mirror for JEI files, as a fallback
-			name = "ModMaven"
-			url = "https://modmaven.dev/"
-			content {
-				includeGroup "mezz.jei"
-			}
-		}
-		maven {
-			url "https://www.cursemaven.com"
-			content {
-				includeGroup "curse.maven"
-			}
-		}
-		maven { url "https://maven.shedaniel.me" }
-		maven { url "https://maven.architectury.dev/" }
-		maven {
-			name = "TerraformersMC" //EMI
-			url = "https://maven.terraformersmc.com/"
-		}
-	}
+    maven { url "https://www.cursemaven.com" }
+    maven { url "https://maven.blamejared.com/" }
+    maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 import com.modrinth.minotaur.dependencies.ModDependency
 
 modrinth {
-	token = '<PAT>';
-	projectId = 'f2UC2nn7' // The ID of your Modrinth project. Slugs will not work.
-	uploadFile = remapJar // Tells Minotaur to use the remapped jar
-	gameVersions = ['1.20.1'] // An array of game versions the version supports
-	loaders = ['fabric'] // Self-explanatory.
-	dependencies = [
-			new ModDependency('P7dR8mSH', 'required') // Creates a new required dependency on Fabric API
-	]
+    token = '<PAT>';
+    projectId = 'f2UC2nn7' // The ID of your Modrinth project. Slugs will not work.
+    uploadFile = remapJar // Tells Minotaur to use the remapped jar
+    gameVersions = ['1.20.1'] // An array of game versions the version supports
+    loaders = ['fabric'] // Self-explanatory.
+    dependencies = [
+            new ModDependency('P7dR8mSH', 'required') // Creates a new required dependency on Fabric API
+    ]
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// Fabric JUnit integratino
-	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+    modCompileOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
+    modLocalRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
 
-	// Mockito
-	testImplementation 'org.mockito:mockito-core:5.8.0'
+    modCompileOnly("dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}") { transitive = false }
+    modLocalRuntime("dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}") { transitive = false }
+
+    // Fabric JUnit integration
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+
+    // Mockito
+    testImplementation 'org.mockito:mockito-core:5.8.0'
 }
 
 processResources {
-	inputs.property "version", project.version
+    inputs.property "version", project.version
 
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+    it.options.release = 17
 }
 
 java {
-	withSourcesJar()
+    withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/naturescompass.accesswidener")
+    accessWidenerPath = file("src/main/resources/naturescompass.accesswidener")
 }
