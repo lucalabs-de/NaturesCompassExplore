@@ -79,7 +79,7 @@ public class NaturesCompassItem extends Item {
                     world,
                     optionalBiome.get(),
                     pos,
-                    (x, z, s) -> foundBiome(world, stack, x, z, pos.getX(), pos.getZ(), s),
+                    (x, z, s) -> foundBiome(world, stack, x, z, pos.getX(), pos.getY(), pos.getZ(), s),
                     (r, s) -> fail(stack, r, s));
 
             searchWorker.start();
@@ -96,7 +96,7 @@ public class NaturesCompassItem extends Item {
                 measureWorker.stop();
             }
 
-            measureWorker = new BiomeMeasureWorker(world, closestBiome, (boundingBox) -> {
+            measureWorker = new BiomeMeasureWorker(world, closestBiome, biomeId, (boundingBox) -> {
 
                 if (searchWorker != null) {
                     searchWorker.stop();
@@ -111,7 +111,7 @@ public class NaturesCompassItem extends Item {
                         optionalBiome.get(),
                         origin,
                         maxDistance, // only start searching beyond the closest biome
-                        (x, z, s) -> foundBiome(world, stack, x, z, origin.getX(), origin.getZ(), s),
+                        (x, z, s) -> foundBiome(world, stack, x, z, origin.getX(), origin.getY(), origin.getZ(), s),
                         (r, s) -> fail(stack, r, s));
 
                 searchWorker.start();
@@ -121,11 +121,11 @@ public class NaturesCompassItem extends Item {
         }
     }
 
-    public void foundBiome(ServerWorld world, ItemStack stack, int x, int z, int xO, int zO, int samples) {
+    public void foundBiome(ServerWorld world, ItemStack stack, int x, int z, int xO, int yO, int zO, int samples) {
         switch (getState(stack)) {
             case SEARCHING:
                 setClosestFound(stack, x, z, xO, zO, samples);
-                searchForSecondClosestBiome(world, stack, new BlockPos(xO, 0, zO), new BlockPos(x, 0, z));
+                searchForSecondClosestBiome(world, stack, new BlockPos(xO, yO, zO), new BlockPos(x, 0, z));
                 break;
             case FOUND_CLOSEST:
                 setSecondClosestFound(stack, x, z, xO, zO, samples);

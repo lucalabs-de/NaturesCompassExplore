@@ -3,6 +3,8 @@ package com.lucalabs.naturescompass.utils;
 import com.lucalabs.naturescompass.config.NaturesCompassConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;

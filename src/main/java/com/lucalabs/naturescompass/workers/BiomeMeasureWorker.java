@@ -2,6 +2,7 @@ package com.lucalabs.naturescompass.workers;
 
 import com.lucalabs.naturescompass.NaturesCompass;
 import com.lucalabs.naturescompass.utils.BiomeUtils;
+import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -33,11 +34,11 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
     private GridSquare current;
     private long time;
 
-    public BiomeMeasureWorker(ServerWorld world, BlockPos biome, Callback callback) {
+    public BiomeMeasureWorker(ServerWorld world, BlockPos biome, Identifier biomeId, Callback callback) {
         this.callback = callback;
 
         this.world = world;
-        this.biomeId = BiomeUtils.getIdentifierForBiome(world, BiomeUtils.getBiomeAtPosition(world, biome));
+        this.biomeId = biomeId;
         this.yValues = MathHelper.stream(biome.getY(), world.getBottomY() + 1, world.getTopY(), 64).toArray();
         this.sampleInterval = 16;
 
@@ -278,6 +279,12 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
             if (outsideBiome.contains(n)) {
                 continue;
             }
+
+//            // TODO remove later
+//            Vec3i pos = n.getCoordinates(origin, sampleInterval);
+//            for (int y :yValues) {
+//                world.setBlockState(new BlockPos(pos.getX(), y, pos.getZ()), Blocks.BLUE_WOOL.getDefaultState());
+//            }
 
             if (BiomeUtils.isBiomeAtAnyYValueEqual(world, biomeId, n.getCoordinates(origin, sampleInterval), yValues)) {
                 pattern |= (byte) (1 << i);
