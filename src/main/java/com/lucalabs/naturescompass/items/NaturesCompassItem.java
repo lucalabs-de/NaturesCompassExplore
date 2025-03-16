@@ -26,6 +26,8 @@ import java.util.UUID;
 
 public class NaturesCompassItem extends Item {
 
+    private static final int MIN_BIOME_DISTANCE_MODIFIER = 200;
+
     private BiomeSearchWorker searchWorker;
     private BiomeMeasureWorker measureWorker;
 
@@ -48,22 +50,22 @@ public class NaturesCompassItem extends Item {
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-//        if (!world.isClient()) {
-//            ServerWorld serverWorld = (ServerWorld) world;
-//            BlockPos curPos = entity.getBlockPos();
-//            switch (getState(stack)) {
-//                case INACTIVE:
-//                    if (hasBiomeId(stack)) {
-//                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
-//                    }
-//                    break;
-//                case FOUND_SECOND_CLOSEST_MIN_DIST:
-//                    if (!isClosestStillValid(stack, curPos)) {
-//                        NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
-//                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
-//                    }
-//            }
-//        }
+        if (!world.isClient()) {
+            ServerWorld serverWorld = (ServerWorld) world;
+            BlockPos curPos = entity.getBlockPos();
+            switch (getState(stack)) {
+                case INACTIVE:
+                    if (hasBiomeId(stack)) {
+                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+                    }
+                    break;
+                case FOUND_SECOND_CLOSEST_MIN_DIST:
+                    if (!isClosestStillValid(stack, curPos)) {
+                        NaturesCompass.LOGGER.info("Tracked biome may no longer be closest, recalibrating...");
+                        searchForBiome(serverWorld, stack, getBiomeId(stack), curPos);
+                    }
+            }
+        }
     }
 
     public void searchForBiome(ServerWorld world, ItemStack stack, Identifier biomeId, BlockPos pos) {
@@ -106,11 +108,17 @@ public class NaturesCompassItem extends Item {
                 // be up to 8 blocks larger
                 int maxDistance = boundingBox.getMaxDistanceFrom(origin) + 8;
 
+                // We require a minimum distance for two biome occurrences to be considered distinct. This avoids having
+                // to update the compass too often.
+                int minBiomeDistance = MIN_BIOME_DISTANCE_MODIFIER * BiomeUtils.getBiomeSize(world);
+                int minDistance = new BiomeUtils.BoundingBox(closestBiome, closestBiome).getMaxDistanceFrom(origin) + minBiomeDistance;
+                int innerRadius = Math.max(maxDistance, minDistance);
+
                 searchWorker = new BiomeSearchWorker(
                         world,
                         optionalBiome.get(),
                         origin,
-                        maxDistance, // only start searching beyond the closest biome
+                        innerRadius, // only start searching beyond the closest biome
                         (x, z, s) -> foundBiome(world, stack, x, z, origin.getX(), origin.getY(), origin.getZ(), s),
                         (r, s) -> fail(stack, r, s));
 
