@@ -91,7 +91,7 @@ public class BiomeMeasureWorkerTest {
                         });
 
                 AtomicBoolean callbackCalled = new AtomicBoolean(false);
-                BiomeMeasureWorker w = new BiomeMeasureWorker(serverWorldM, origin, b -> {
+                BiomeMeasureWorker w = new BiomeMeasureWorker(serverWorldM, origin, null, b -> {
                     callbackCalled.set(true);
                     BiomeUtils.BoundingBox correct = solutions.get(testCase);
                     Assertions.assertEquals(b.nw().getX(), correct.nw().getX());
