@@ -68,6 +68,16 @@ public class NaturesCompassItem extends Item {
         }
     }
 
+//    @Override
+//    public boolean isItemBarVisible(ItemStack stack) {
+//        return getState(stack) != CompassState.UNKNOWN;
+//    }
+//
+//    @Override
+//    public int getItemBarStep(ItemStack stack) {
+//        return getBiomeId(stack).hashCode() % 13;
+//    }
+
     public void searchForBiome(ServerWorld world, ItemStack stack, Identifier biomeId, BlockPos pos) {
         Optional<Biome> optionalBiome = BiomeUtils.getBiomeForIdentifier(world, biomeId);
         if (optionalBiome.isPresent()) {
@@ -187,11 +197,14 @@ public class NaturesCompassItem extends Item {
             stack.getNbt().putInt(NbtProperties.STATE, CompassState.FOUND_SECOND_CLOSEST_MIN_DIST.getId());
 
             // ensure this is actually farther away than the closest biome (our sampling might have gotten unlucky, or two biomes are really close together)
-            int closestX = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
-            int closestZ = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
+            long closestX = stack.getNbt().getInt(NbtProperties.CLOSEST_X);
+            long closestZ = stack.getNbt().getInt(NbtProperties.CLOSEST_Z);
 
-            double distToClosest = Math.sqrt(closestX * closestX + closestZ * closestZ);
-            double distToSecondClosest = Math.sqrt(x * x + z * z);
+            Vec3d toClosest = new Vec3d(closestX - xO, 0.0, closestZ - zO);
+            Vec3d toSecondClosest = new Vec3d(x - xO, 0.0, z - zO);
+
+            double distToClosest = toClosest.length();
+            double distToSecondClosest = toSecondClosest.length();
 
             if (distToClosest > distToSecondClosest) {
                 // oh-oh, let's swap
@@ -246,7 +259,7 @@ public class NaturesCompassItem extends Item {
             return CompassState.fromId(stack.getNbt().getInt(NbtProperties.STATE));
         }
 
-        return null;
+        return CompassState.UNKNOWN;
     }
 
     public BlockPos getFoundBiomePos(ItemStack stack) {
@@ -285,6 +298,7 @@ public class NaturesCompassItem extends Item {
 
     private boolean isClosestStillValid(ItemStack stack, BlockPos playerPos) {
         if (!ItemUtils.verifyNBT(stack)) {
+            NaturesCompass.LOGGER.error("NBT not valid");
             return false;
         }
 

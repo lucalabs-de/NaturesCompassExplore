@@ -2,7 +2,7 @@ package com.lucalabs.naturescompass.utils;
 
 public enum CompassState {
 
-	INACTIVE(0), SEARCHING(1), FOUND_CLOSEST(2), FOUND_SECOND_CLOSEST_MIN_DIST(3), CLOSEST_NOT_FOUND(4);
+	INACTIVE(0), SEARCHING(1), FOUND_CLOSEST(2), FOUND_SECOND_CLOSEST_MIN_DIST(3), CLOSEST_NOT_FOUND(4), UNKNOWN(5);
 
 	private int id;
 
