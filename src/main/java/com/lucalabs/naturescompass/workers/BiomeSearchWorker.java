@@ -146,8 +146,10 @@ public class BiomeSearchWorker implements WorldWorkerManager.IWorker {
     }
 
     public void stop() {
-        NaturesCompass.LOGGER.info("Search stopped: {} radius, {} samples", getRadius(), samples);
-        finished = true;
+        if (!finished) {
+            NaturesCompass.LOGGER.info("Search stopped: {} radius, {} samples", getRadius(), samples);
+            finished = true;
+        }
     }
 
     private int getRadius() {

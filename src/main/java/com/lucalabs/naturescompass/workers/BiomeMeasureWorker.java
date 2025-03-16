@@ -62,6 +62,8 @@ public class BiomeMeasureWorker implements WorldWorkerManager.IWorker {
         GridSquare pos = current.get(d);
 
         // TODO (when this is implemented, one should also reduce the min biome distance modifier)
+        finished = true;
+        succeed();
 
         return false;
     }
