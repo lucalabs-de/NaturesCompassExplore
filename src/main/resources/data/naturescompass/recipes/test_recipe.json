@@ -1,9 +1,0 @@
-{
-  "type": "naturescompass:biome_calibration",
-  "inputs": [
-    {
-      "item": "minecraft:cobblestone"
-    }
-  ],
-  "biome": "minecraft:plains"
-}

@@ -9,6 +9,7 @@ import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -20,14 +21,14 @@ import static java.util.function.Predicate.not;
 
 public class CalibrationRecipe implements Recipe<SimpleInventory> {
 
-    private final List<Ingredient> ingredients;
+    private final DefaultedList<Ingredient> ingredients;
     private final Identifier biomeId;
     private final Identifier id;
 
     public CalibrationRecipe(List<Ingredient> ingredients, Identifier biomeId, Identifier id) {
         assert ingredients.size() <= 3;
 
-        this.ingredients = ingredients;
+        this.ingredients = DefaultedList.copyOf(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
         this.biomeId = biomeId;
         this.id = id;
     }
@@ -87,8 +88,9 @@ public class CalibrationRecipe implements Recipe<SimpleInventory> {
         return true;
     }
 
-    public List<Ingredient> getIngredientList() {
-        return this.ingredients;
+    @Override
+    public DefaultedList<Ingredient> getIngredients() {
+       return this.ingredients;
     }
 
     public Identifier getBiomeId() {

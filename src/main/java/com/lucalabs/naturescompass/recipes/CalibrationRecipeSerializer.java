@@ -47,7 +47,7 @@ public class CalibrationRecipeSerializer implements RecipeSerializer<Calibration
     public void write(PacketByteBuf buf, CalibrationRecipe recipe) {
         buf.writeIdentifier(recipe.getBiomeId());
         buf.writeCollection(
-                recipe.getIngredientList(),
+                recipe.getIngredients(),
                 (PacketByteBuf b, Ingredient i) -> { i.write(b); });
     }
 

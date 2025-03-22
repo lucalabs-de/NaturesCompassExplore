@@ -44,10 +44,16 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modCompileOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
-    modLocalRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
+    if (project.enable_jei.toBoolean()) {
+        modLocalRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
+    }
 
     modCompileOnly("dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}") { transitive = false }
-    modLocalRuntime("dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}") { transitive = false }
+    if (project.enable_emi.toBoolean()) {
+        modLocalRuntime("dev.emi:emi-fabric:${emi_version}+${project.minecraft_version}") { transitive = false }
+    }
+
+    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") { exclude group: "net.fabricmc"; exclude group: "net.fabricmc.fabric-api" }
 
     // Fabric JUnit integration
     testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"

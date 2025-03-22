@@ -6,6 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.UUID;
@@ -50,5 +51,9 @@ public abstract class ItemUtils {
         }
 
         return ItemStack.EMPTY;
+    }
+
+    public static String getComparableIngredientName(Ingredient i) {
+        return i.getMatchingStacks()[0].getItem().toString();
     }
 }

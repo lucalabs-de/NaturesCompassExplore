@@ -1,10 +1,13 @@
 package com.lucalabs.naturescompass;
 
+import com.lucalabs.naturescompass.integrations.jei.CalibrationCategory;
 import com.lucalabs.naturescompass.items.NaturesCompassItem;
 import com.lucalabs.naturescompass.network.SyncPacket;
 import com.lucalabs.naturescompass.screens.BiomeChoiceScreen;
 import com.lucalabs.naturescompass.utils.CompassState;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ClampedModelPredicateProvider;
@@ -19,6 +22,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -98,6 +102,13 @@ public class NaturesCompassClient implements ClientModInitializer {
                     interpolationData.put(stack, new InterpolationData());
                 }
                 return interpolationData.get(stack);
+            }
+        });
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            ClientWorld world = client.world;
+            if (world != null) {
+                CalibrationCategory.world = new WeakReference<>(world);
             }
         });
     }

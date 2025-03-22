@@ -39,7 +39,9 @@ public class NaturesCompass implements ModInitializer {
                     Identifier.of(MOD_ID, CalibrateRandomlyLootFunction.ID),
                     new LootFunctionType(new CalibrateRandomlyLootFunction.Serializer()));
 
-    public static List<Identifier> allowedBiomes;    public static final ScreenHandlerType<BiomeChoiceScreenHandler> BIOME_SCREEN_HANDLER =
+    public static List<Identifier> allowedBiomes;
+
+    public static final ScreenHandlerType<BiomeChoiceScreenHandler> BIOME_SCREEN_HANDLER =
             Registry.register(
                     Registries.SCREEN_HANDLER,
                     Identifier.of("naturescompass", "biome_choice_screen"),
@@ -48,9 +50,6 @@ public class NaturesCompass implements ModInitializer {
     @Override
     public void onInitialize() {
         NaturesCompassConfig.load();
-
-//        NaturesCompassIntegrations.setRecipes(NaturesCompassConfig.getRawIngredientMap());
-        IModPlugin m;
 
         Registry.register(Registries.ITEM, new Identifier(MOD_ID, "naturescompass"), NATURES_COMPASS_ITEM);
         Registry.register(Registries.RECIPE_SERIALIZER, CalibrationRecipeSerializer.ID, CalibrationRecipeSerializer.INSTANCE);
@@ -63,9 +62,5 @@ public class NaturesCompass implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(SearchPacket.ID, SearchPacket::apply);
 
         allowedBiomes = new ArrayList<>();
-    }
-
-    private void test(IModPlugin m) {
-        Identifier i = m.getPluginUid();
     }
 }
