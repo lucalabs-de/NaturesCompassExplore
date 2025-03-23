@@ -1,6 +1,9 @@
 {
     "_comment": "LANGUAGE FILE - ENGLISH",
 
+    "_comment": "EMI integration",
+    "emi.category.naturescompass.calibration": "Calibration",
+
     "_comment": "ITEMS",
     "item.naturescompass.naturescompass": "Nature's Compass",
 

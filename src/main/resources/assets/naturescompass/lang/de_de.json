@@ -1,6 +1,9 @@
 {
     "_comment": "LANGUAGE FILE - GERMAN",
 
+    "_comment": "EMI integration",
+    "emi.category.naturescompass.calibration": "Kalibrierung",
+
     "_comment": "ITEMS",
     "item.naturescompass.naturescompass": "Kompass der Natur",
 
@@ -27,7 +30,8 @@
 
     "_comment": "STRINGS - GUI",
     "string.naturescompass.biome": "Biom",
-    "string.naturescompass.biomes": "Biome",
+    "string.naturescompass.biome_table": "Biomtisch",
+    "string.naturescompass.calibration": "Kalibrierung",
     "string.naturescompass.category": "Kategorie",
     "string.naturescompass.coordinates": "Koordinaten",
     "string.naturescompass.dimension": "Dimension",

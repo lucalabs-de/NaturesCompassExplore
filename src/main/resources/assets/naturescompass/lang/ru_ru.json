@@ -27,7 +27,8 @@
 
     "_comment": "STRINGS - GUI",
     "string.naturescompass.biome": "Биом",
-    "string.naturescompass.biomes": "Биомы",
+    "string.naturescompass.biome_table": "Стол Биомов",
+    "string.naturescompass.calibration": "Калибрировка",
     "string.naturescompass.category": "Категория",
     "string.naturescompass.coordinates": "Координаты",
     "string.naturescompass.dimension": "Измерение",
