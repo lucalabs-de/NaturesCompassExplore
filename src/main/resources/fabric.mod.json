@@ -27,6 +27,9 @@
     ],
     "jei_mod_plugin": [
       "com.lucalabs.naturescompass.integrations.jei.JeiIntegration"
+    ],
+    "emi": [
+      "com.lucalabs.naturescompass.integrations.emi.EmiIntegration"
     ]
   },
   "mixins": [
