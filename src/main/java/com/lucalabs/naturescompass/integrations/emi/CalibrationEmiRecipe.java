@@ -12,13 +12,13 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.recipe.Ingredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
@@ -32,12 +32,19 @@ public class CalibrationEmiRecipe implements EmiRecipe {
     private final Identifier id;
     private final Identifier biomeId;
     private final List<EmiIngredient> inputs;
+    private final List<EmiIngredient> ingredients;
     private final List<EmiStack> outputs;
 
     public CalibrationEmiRecipe(CalibrationRecipe r) {
         this.id = r.getId();
         this.biomeId = r.getBiomeId();
-        this.inputs = r.getIngredients().stream().map(EmiIngredient::of).toList();
+        this.ingredients = r.getIngredients().stream().map(EmiIngredient::of).toList();
+
+        // ingredients don't contain the Nature's Compass
+        List<EmiIngredient> ingredientsCopy = new java.util.ArrayList<>(this.ingredients);
+        ingredientsCopy.add(EmiIngredient.of(Ingredient.ofItems(NaturesCompass.NATURES_COMPASS_ITEM)));
+        this.inputs = ingredientsCopy;
+
         this.outputs = List.of(EmiStack.of(r.getOutput(DynamicRegistryManager.EMPTY)));
     }
 
@@ -81,17 +88,17 @@ public class CalibrationEmiRecipe implements EmiRecipe {
         widgets.addTexture(EmiTexture.EMPTY_ARROW, 65, 24);
         widgets.addTexture(EmiTexture.PLUS, 6, 25);
 
-        widgets.addSlot(EmiStack.of(NaturesCompass.NATURES_COMPASS_ITEM), 4, 4).recipeContext(this);
+        widgets.addSlot(EmiStack.of(NaturesCompass.NATURES_COMPASS_ITEM), 4, 4);
 
         for (int i = 0; i < 3; i++) {
-            if (i < inputs.size()) {
-                widgets.addSlot(inputs.get(i), 4 + 18 * i, 41).recipeContext(this);
+            if (i < ingredients.size()) {
+                widgets.addSlot(ingredients.get(i), 4 + 18 * i, 41);
             } else {
                 widgets.addSlot(4 + 18 * i, 41);
             }
         }
 
-        widgets.addSlot(outputs.get(0), 95, 19).recipeContext(this);
+        widgets.addSlot(outputs.get(0), 95, 19).large(true).recipeContext(this);
 
         drawBiomeHint(widgets);
     }

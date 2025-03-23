@@ -1,6 +1,8 @@
 {
     "_comment": "LANGUAGE FILE - RUSSIAN",
 
+    "emi.category.naturescompass.calibration": "Калибрировка",
+
     "_comment": "ITEMS",
     "item.naturescompass.naturescompass": "Компас природы",
 
