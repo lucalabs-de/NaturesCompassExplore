@@ -1,18 +1,18 @@
 package com.lucalabs.naturescompass;
 
+import com.lucalabs.naturescompass.integrations.emi.CalibrationEmiRecipe;
 import com.lucalabs.naturescompass.integrations.jei.CalibrationCategory;
 import com.lucalabs.naturescompass.items.NaturesCompassItem;
 import com.lucalabs.naturescompass.network.SyncPacket;
 import com.lucalabs.naturescompass.screens.BiomeChoiceScreen;
 import com.lucalabs.naturescompass.utils.CompassState;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ClampedModelPredicateProvider;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -23,8 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.WeakHashMap;
 
 public class NaturesCompassClient implements ClientModInitializer {
@@ -105,12 +103,23 @@ public class NaturesCompassClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            ClientWorld world = client.world;
-            if (world != null) {
-                CalibrationCategory.world = new WeakReference<>(world);
-            }
-        });
+        if (FabricLoader.getInstance().isModLoaded("jei")) {
+            ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+                ClientWorld world = client.world;
+                if (world != null) {
+                    CalibrationCategory.world = new WeakReference<>(world);
+                }
+            });
+        }
+
+        if (FabricLoader.getInstance().isModLoaded("emi")) {
+            ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+                ClientWorld world = client.world;
+                if (world != null) {
+                    CalibrationEmiRecipe.world = new WeakReference<>(world);
+                }
+            });
+        }
     }
 
     private static class InterpolationData {

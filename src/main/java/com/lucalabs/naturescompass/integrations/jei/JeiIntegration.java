@@ -14,7 +14,6 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.annotation.MethodsReturnNonnullByDefault;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +43,6 @@ public class JeiIntegration implements IModPlugin {
 
     @Override
     public void registerRecipes(@NotNull IRecipeRegistration registration) {
-        // TODO get the actual registered recipes to avoid JEI warnings
         registration.addRecipes(
                 CALIBRATION_RECIPE,
                 NaturesCompassConfig.calibrationRecipes.entrySet().stream().sorted(this::compareCalibrationRecipes).map(e -> new CalibrationRecipe(
